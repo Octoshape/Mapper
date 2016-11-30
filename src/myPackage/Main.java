@@ -8,27 +8,20 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Arrays;
 
+
 import myPackage.GameBoard.Move;
-import myPackage.Utils.DIRECTION;
 import myPackage.Utils.VALUE;
 
 public class Main {
 	
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
-//		String[][] vals = new String[][] {
-//			{ "COPPER", "SILVER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"},
-//			{ "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER", "COPPER"}
-//		};
-//		GameBoard g = new GameBoard(vals);
-//		g.makeMove(new Move(DIRECTION.D, 0, 1));
-//		
-//		System.out.println(g);
+//		long[][] vals = extractRGB(ImageIO.read(new File("images\\base.png")));
+//		GameBoard g = new GameBoard(analyzeRGB(vals));
+//			
+//		System.out.println(g.calculateNextMove());
+		
+		int depth = Integer.parseInt(args[0]);
+		
 		Thread.sleep(3000);
 		BufferedImage previousImage, image = takeScreenshot(); //ImageIO.read(new File("images\\base.png")); 
 		Utils.startNewGame();
@@ -46,7 +39,7 @@ public class Main {
 			
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
-			Move nextMove = game.calculateNextMove();
+			Move nextMove = game.calculateNextMove(depth);
 			Utils.makeMove(nextMove);
 		}
 	}

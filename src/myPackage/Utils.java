@@ -21,10 +21,11 @@ public class Utils {
 	public static int Y_CONTINUE = 950;
 	public static int CONTINUE_SIZE = 50;
 	public static long CONTINUE_VAL = -16497979377l;
+	public static boolean SNAPSHOT = false;
 	
 	
 	public static enum VALUE { EMPTY, COPPER, SILVER, GOLD, BAG, IRON, GREEN, RED, TREASURE };
-	public static enum DIRECTION { U, R, D, L }
+	public static enum DIRECTION { UP, RIGHT, DOWN, LEFT }
 	
 	public static void startNewGame() throws AWTException, InterruptedException {
 		click(570, 980); // Click the Minigame button.

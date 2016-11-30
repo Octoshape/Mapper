@@ -1,25 +1,24 @@
 package myPackage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import myPackage.Utils.DIRECTION;
 import myPackage.Utils.VALUE;
 
 public class GameBoard {
-	
+
 	@Override
 	public String toString() {
 		String result = "";
-		
+
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				result += String.format("%1$" + 8 + "s", this.board[i][j]) + " ";
 			}
 			result += "\n";
 		}
-		
+
 		return result;
 	}
 
@@ -51,182 +50,215 @@ public class GameBoard {
 				board[i][j] = Utils.VALUE.valueOf(vals[i][j]);
 	}
 
-//	private List<Move> threes = new ArrayList<>();
-	private Move three = null;
-	private Move four = null;
-	private Move five = null;
-
-	public Move calculateNextMove () {
+	public Move calculateNextMove (int depth) {
 		GameBoard moveBoard = new GameBoard(this);
 		Move nextMove = null;
-		found_five:
-			for (int i = 0; i < 8; i++) {
-				for (int j = 0; j < 8; j++) {
-					if (j < 7) {
-						nextMove = new Move(DIRECTION.R, i, j);
-						moveBoard.makeMove(nextMove);
-						moveBoard.findMatches(nextMove);
-//						moveBoard.assignMove(moveBoard.findBestMatch(), nextMove);
-						overwriteMoves(moveBoard);
-						if (five != null) {
-							break found_five;
+		Move bestMove = new Move(0, 0, 0);
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (j < 7) {
+					nextMove = new Move(DIRECTION.RIGHT, i, j);
+					moveBoard.makeMove(nextMove);
+					if (depth > 0) {
+						moveBoard.simulate(nextMove);
+						Move nextnextMove = moveBoard.calculateNextMove(--depth);
+						if (nextMove.extraTurns + nextnextMove.extraTurns > bestMove.extraTurns) {
+							bestMove = nextMove;
+						}
+					} else {
+						if (bestMove.extraTurns == -1) {
+							if (nextMove.extraTurns >= bestMove.extraTurns) {
+								bestMove = nextMove;
+							}
+						} else {
+							if (nextMove.extraTurns > bestMove.extraTurns) {
+								bestMove = nextMove;
+							}
 						}
 					}
-					moveBoard = new GameBoard(this);
-					
-					if (i < 7) {
-						nextMove = new Move(DIRECTION.D, i, j);
-						moveBoard.makeMove(nextMove);
-						moveBoard.findMatches(nextMove);
-//						moveBoard.assignMove(moveBoard.findBestMatch(), nextMove);
-						overwriteMoves(moveBoard);
-						if (five != null) {
-							break found_five;
+				}
+				moveBoard = new GameBoard(this);
+
+				if (i < 7) {
+					nextMove = new Move(DIRECTION.DOWN, i, j);
+					moveBoard.makeMove(nextMove);
+					if (depth > 0) {
+						moveBoard.simulate(nextMove);
+						Move nextnextMove = moveBoard.calculateNextMove(--depth);
+						if (nextMove.extraTurns + nextnextMove.extraTurns > bestMove.extraTurns) {
+							bestMove = nextMove;
+						}
+					} else {
+						if (bestMove.extraTurns == -1) {
+							if (nextMove.extraTurns >= bestMove.extraTurns) {
+								bestMove = nextMove;
+							}
+						} else {
+							if (nextMove.extraTurns > bestMove.extraTurns) {
+								bestMove = nextMove;
+							}
 						}
 					}
-					moveBoard = new GameBoard(this);
+				}
+				moveBoard = new GameBoard(this);
+			}
+		}
+
+		return bestMove;
+	}
+
+	private void simulate(Move nextMove) {
+		boolean foundMatches = false;
+		GemsMatch match;
+		for (int x = 0; x < 8; x++) {
+			for (int y = 0; y < 8; y++) {
+				if (board[x][y] == VALUE.EMPTY) {
+					continue;
+				}
+				match = new GemsMatch(new ArrayList<>(), new Coordinates(0, 0));
+				if (nextMove.column == x && nextMove.row == y) {
+					match = findMatchingStones(x, y, nextMove);
+					removeStones(match);
+				}
+				while (!match.coords.isEmpty()) {
+					foundMatches = true;
+					match = findMatchingStones(x, y, null);
+					removeStones(match);
 				}
 			}
-		
-		if (five != null) {
-			return five;
-		}
-		
-//		Move bestThree = simulateThrees();
-//		
-//		if (bestThree != null) {
-//			return bestThree;
-//		}
-		
-		if (four != null) {
-			return four;
-		}
-		
-		if (three != null) {
-			return three;
-		}
-		
-		throw new IllegalStateException("Board found no valid moves!");
-	}
-
-//	private Move simulateThrees() {
-//		for (Move nextMove : threes) {
-//			GameBoard moveBoard = new GameBoard(this);
-//			if (moveBoard.simulate(nextMove)) {
-//				return nextMove;
-//			}
-//			
-//			Move nextnextMove = moveBoard.calculateNextMove();
-//			moveBoard.makeMove(nextnextMove);
-//			if (moveBoard.findBestMatch() >= 5) {
-//				return nextMove;
-//			}
-//		}
-//		return null;
-//	}
-
-//	private int findBestMatch() {
-//		int result = 1;
-//		for (int i = 0; i < 8; i++) {
-//			for (int j = 0; j < 8; j++) {
-//				int tmp = findCommonStones(i, j);
-//
-//				if (tmp > result) {
-//					result = tmp;
-//				}
-//			}
-//		}
-//		return result;
-//	}
-
-	private void overwriteMoves(GameBoard moveBoard) {
-//		this.threes.addAll(moveBoard.threes);
-
-		if (moveBoard.three != null) {
-			this.four = moveBoard.three;
-		}
-		
-		if (moveBoard.four != null && this.four == null) {
-			this.four = moveBoard.four;
 		}
 
-		if (moveBoard.five != null) {
-			this.five = moveBoard.five;
+		if (foundMatches) {
+			collapse();
 		}
 	}
 
-	private void findMatches(Move lastMove) {
-		int activeX = lastMove.row, activeY = lastMove.column;
-		int amount = findCommonStones(activeX, activeY);
-		assignMove(amount, lastMove);
-		
-		int passiveX = lastMove.row2, passiveY = lastMove.column2;
-		amount = findCommonStones(passiveX, passiveY);
-		assignMove(amount, lastMove);
+	private void collapse() {
+		for (int y = 0; y < 8; y++) {
+			for (int x = 7; x > 0; x--) {
+				while (board[x][y] == VALUE.EMPTY) {
+					shiftDown(x, y);
+				}
+			}
+		}
 	}
-	
-	private void assignMove(int amount, Move lastMove) {
+
+	private void shiftDown(int x, int y) {
+		for (int currentX = x; currentX > 0; currentX--) {
+			board[currentX][y] = board[currentX - 1][y];
+		}
+		board[0][y] = VALUE.EMPTY;
+	}
+
+	private void removeStones(GemsMatch match) {
+		// save the replacement's value.
+		VALUE currVal = board[match.replacementCoord.x][match.replacementCoord.y];
+
+		// remove all stones.
+		for (Coordinates c : match.coords) {
+			board[c.x][c.y] = VALUE.EMPTY;
+		}
+
+		// add better replacement.
+		board[match.replacementCoord.x][match.replacementCoord.y] = VALUE.values()[currVal.ordinal() + 1];
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param move 
+	 * @return if something has matched
+	 */
+	private GemsMatch findMatchingStones(int x, int y, Move move) {
+		VALUE val = board[x][y];
+		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
+		Coordinates replacement = new Coordinates(-1, -1);
+
+		// go left
+		for (int currentX = x; --currentX >= 0 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
+		// go right
+		for (int currentX = x; ++currentX < 8 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
+		// go up
+		for (int currentY = y; --currentY >= 0 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
+		// go down
+		for (int currentY = y; ++currentY < 8 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
+
+		if (leftright.size() > 1) {
+			removeStones.addAll(leftright);
+		}
+
+		if (updown.size() > 1) {
+			removeStones.addAll(updown);
+		}
+
+		if (!removeStones.isEmpty()) {
+			removeStones.add(new Coordinates(x, y));
+		}
+
+		// Calculate replacement coordinates.
+
+		if (move != null) {
+			replacement = new Coordinates(x, y);
+		} else if (leftright.size() > 1 && updown.size() > 1) {
+			// cross
+			if (removeStones.size() % 2 == 0) {
+				Utils.SNAPSHOT = true;
+			}
+
+			replacement = new Coordinates(x, y);
+
+		} else {
+			// line
+			if (removeStones.size() % 2 == 0) {
+				Utils.SNAPSHOT = true;
+			}
+			int xMean = 0, yMean = 0;
+			for (Coordinates c : removeStones) {
+				xMean += c.x;
+				yMean += c.y;
+			}
+			xMean /= removeStones.size();
+			yMean /= removeStones.size();
+
+			replacement = new Coordinates(xMean, yMean);
+		}
+
+		assignExtraTurns(removeStones.size(), move);
+		return new GemsMatch(removeStones, replacement);
+	}
+
+	private void assignExtraTurns (int amount, Move move) {
 		switch (amount) {
 		case 3:
-//			threes.add(lastMove);
-			three = lastMove;
+			move.extraTurns = -1;
 			break;
 		case 4:
-			four = lastMove;
+			move.extraTurns = 0;
 			break;
 		case 5:
 		case 6:
 		case 7:
-			five = lastMove;
+			move.extraTurns = 1;
 			break;
 		default:
 			break;
 		}
 	}
 
-	private int findCommonStones(int activeX, int activeY) {
-		VALUE val = this.board[activeX][activeY];
-
-		int result = 1;
-		int leftright = 0;
-		int updown = 0;
-
-		// go left
-		for (int currentX = activeX; --currentX >= 0 && this.board[currentX][activeY] == val; leftright++);
-		// go right
-		for (int currentX = activeX; ++currentX < 8 && this.board[currentX][activeY] == val; leftright++);
-		// go up
-		for (int currentY = activeY; --currentY >= 0 && this.board[activeX][currentY] == val; updown++);
-		// go down
-		for (int currentY = activeY; ++currentY < 8 && this.board[activeX][currentY] == val; updown++);
-		
-		if (leftright > 1) {
-			result += leftright;
-		}
-
-		if (updown > 1) {
-			result += updown;
-		}
-
-		return result;
-	}
-
 	public void makeMove(Move m) {
+		if (m == null) {
+			return;
+		}
+		
 		if (validMove(m)) {
 			swap (m.row, m.column, m.row2, m.column2);
 		}
-//		simulate();
-		balanceBoard();
+		
+		int match1 = findMatchingStones(m.row, m.column, m).size();
+		int match2 = findMatchingStones(m.row2, m.column2, m).size();
+		assignExtraTurns(Math.max(match1, match2), m);
 	}
 
-//	private boolean simulate(Move m) {
-//		return false;
-//	}
-
-	private int balanceBoard() {
-		return 1;
-	}
-	
 	private void swap(int row, int column, int row2, int column2) {
 		VALUE tmp = this.board[row][column];
 		this.board[row][column] = this.board[row2][column2];
@@ -241,34 +273,35 @@ public class GameBoard {
 
 		@Override
 		public String toString() {
-			return "Move: (" + row + ", " + column + ") " + dir;
+			return "Move: (" + row + ", " + column + ") " + dir + " giving " + extraTurns + " extra turns.";
 		}
 
 		public Move(DIRECTION d, int r, int c) {
 			dir = d;
 			row = r;
 			column = c;
-			
+			extraTurns = -2;
+
 			switch(d) {
-			case D:
+			case DOWN:
 				row2 = row + 1;
 				column2 = column;
 				break;
-			case L:
+			case LEFT:
 				row2 = row;
 				column2 = column - 1;
 				break;
-			case R:
+			case RIGHT:
 				row2 = row;
 				column2 = column + 1;
 				break;
-			case U:
+			case UP:
 				row2 = row - 1;
 				column2 = column;
 				break;
 			default:
 				break;
-			
+
 			}
 		}
 
@@ -281,6 +314,7 @@ public class GameBoard {
 		public int column;
 		public int row2;
 		public int column2;
-		
+		public int extraTurns;
+
 	}
 }
