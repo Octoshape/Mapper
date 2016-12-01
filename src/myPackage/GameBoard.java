@@ -353,7 +353,7 @@ public class GameBoard {
 				return 1;
 			} else if (this.totalTurnsUsed < otherMove.totalTurnsUsed) {
 				return -1;
-			} else
+			} else // Go down the move sequences, the first one with bigger extraturns wins.
 				return 0;
 		}
 	}
