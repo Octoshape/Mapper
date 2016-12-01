@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import myPackage.Utils.DIRECTION;
-import myPackage.Utils.VALUE;
+import myPackage.Utils.GEM;
 
 public class GameBoard {
 
@@ -22,109 +22,104 @@ public class GameBoard {
 		return result;
 	}
 
-	public VALUE[][] board;
+	public GEM[][] board;
 
-	public VALUE[][] getBoard() {
+	public GEM[][] getBoard() {
 		return board;
 	}
 
 	public GameBoard() {
-		board = new Utils.VALUE[8][8];
+		board = new Utils.GEM[8][8];
 	}
 
 	public GameBoard(GameBoard otherBoard) {
-		board = new Utils.VALUE[8][8];
+		board = new Utils.GEM[8][8];
 		for (int i = 0; i < 8; i++) 
 			for (int j = 0; j < 8; j++) 
 				board[i][j] = otherBoard.board[i][j];
 	}
 
-	public GameBoard(VALUE[][] vals) {
+	public GameBoard(GEM[][] vals) {
 		board = vals;
 	}
 
 	public GameBoard(String[][] vals) {
-		board = new Utils.VALUE[8][8];
+		board = new Utils.GEM[8][8];
 		for (int i = 0; i < 8; i++) 
 			for (int j = 0; j < 8; j++) 
-				board[i][j] = Utils.VALUE.valueOf(vals[i][j]);
+				board[i][j] = Utils.GEM.valueOf(vals[i][j]);
 	}
 
 	public Move calculateNextMove (int depth) {
 		GameBoard moveBoard = new GameBoard(this);
 		Move nextMove = null;
 		Move bestMove = new Move(0, 0, 0);
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (j < 7) {
-					nextMove = new Move(DIRECTION.RIGHT, i, j);
-					moveBoard.makeMove(nextMove);
-					if (depth > 0) {
-						moveBoard.simulate(nextMove);
-						Move nextnextMove = moveBoard.calculateNextMove(--depth);
-						if (nextMove.extraTurns + nextnextMove.extraTurns > bestMove.extraTurns) {
-							bestMove = nextMove;
-						}
-					} else {
-						if (bestMove.extraTurns == -1) {
-							if (nextMove.extraTurns >= bestMove.extraTurns) {
-								bestMove = nextMove;
-							}
-						} else {
-							if (nextMove.extraTurns > bestMove.extraTurns) {
-								bestMove = nextMove;
-							}
-						}
-					}
+		for (int row = 0; row < 8; row++) {
+			for (int column = 0; column < 8; column++) {
+				if (column < 7) {
+					nextMove = new Move(DIRECTION.RIGHT, row, column);
+					bestMove = findBestMove(depth, moveBoard, nextMove, bestMove);
 				}
 				moveBoard = new GameBoard(this);
 
-				if (i < 7) {
-					nextMove = new Move(DIRECTION.DOWN, i, j);
-					moveBoard.makeMove(nextMove);
-					if (depth > 0) {
-						moveBoard.simulate(nextMove);
-						Move nextnextMove = moveBoard.calculateNextMove(--depth);
-						if (nextMove.extraTurns + nextnextMove.extraTurns > bestMove.extraTurns) {
-							bestMove = nextMove;
-						}
-					} else {
-						if (bestMove.extraTurns == -1) {
-							if (nextMove.extraTurns >= bestMove.extraTurns) {
-								bestMove = nextMove;
-							}
-						} else {
-							if (nextMove.extraTurns > bestMove.extraTurns) {
-								bestMove = nextMove;
-							}
-						}
-					}
+				if (row < 7) {
+					nextMove = new Move(DIRECTION.DOWN, row, column);
+					bestMove = findBestMove(depth, moveBoard, nextMove, bestMove);
 				}
 				moveBoard = new GameBoard(this);
 			}
 		}
+		return bestMove;
+	}
 
+	private Move findBestMove(int depth, GameBoard moveBoard, Move nextMove, Move bestMove) {
+		moveBoard.makeMove(nextMove);
+		if (depth > 0) {
+			moveBoard.simulate(nextMove);
+			Move nextnextMove = moveBoard.calculateNextMove(depth - 1);
+			nextMove.extraTurns += nextnextMove.extraTurns;
+			nextMove.turnsUsed += nextnextMove.turnsUsed;
+			System.out.println("First move:");
+			System.out.println(nextMove);
+			System.out.println("Second move:");
+			System.out.println(nextnextMove);
+			System.out.println();
+			System.out.println();
+			if (nextMove.compareTo(bestMove) == 1) {
+				bestMove = nextMove;
+			}
+		} else {
+			if (bestMove.extraTurns == -1) {
+				if (nextMove.extraTurns >= bestMove.extraTurns) {
+					bestMove = nextMove;
+				}
+			} else {
+				if (nextMove.extraTurns > bestMove.extraTurns) {
+					bestMove = nextMove;
+				}
+			}
+		}
+		
 		return bestMove;
 	}
 
 	private void simulate(Move nextMove) {
 		boolean foundMatches = false;
 		GemsMatch match;
+
+		if (nextMove != null) {
+			match = findMatchingStones(nextMove.row, nextMove.column, nextMove);
+			foundMatches |= removeStones(match);
+			match = findMatchingStones(nextMove.row2, nextMove.column2, nextMove);
+			foundMatches |= removeStones(match);
+		}
+
 		for (int x = 0; x < 8; x++) {
 			for (int y = 0; y < 8; y++) {
-				if (board[x][y] == VALUE.EMPTY) {
-					continue;
-				}
-				match = new GemsMatch(new ArrayList<>(), new Coordinates(0, 0));
-				if (nextMove.column == x && nextMove.row == y) {
-					match = findMatchingStones(x, y, nextMove);
-					removeStones(match);
-				}
-				while (!match.coords.isEmpty()) {
-					foundMatches = true;
+				do  {
 					match = findMatchingStones(x, y, null);
-					removeStones(match);
-				}
+					foundMatches |= removeStones(match);
+				} while (!match.coords.isEmpty());
 			}
 		}
 
@@ -132,35 +127,43 @@ public class GameBoard {
 			collapse();
 		}
 	}
-
+	
 	private void collapse() {
-		for (int y = 0; y < 8; y++) {
-			for (int x = 7; x > 0; x--) {
-				while (board[x][y] == VALUE.EMPTY) {
-					shiftDown(x, y);
+		for (int column = 0; column < 8; column++) {
+			int row = 7, fetchRow = 7;
+			while (row >= 0) {
+				if (board[fetchRow][column] != GEM.EMPTY) {
+					board[row--][column] = board[fetchRow][column];
+				}
+				fetchRow--;
+				if (fetchRow == -1) {
+					// fill rest with empty.
+					while (row >= 0) {
+						board[row--][column] = GEM.EMPTY;
+					}
 				}
 			}
 		}
+		simulate(null);
 	}
 
-	private void shiftDown(int x, int y) {
-		for (int currentX = x; currentX > 0; currentX--) {
-			board[currentX][y] = board[currentX - 1][y];
+	private boolean removeStones(GemsMatch match) {
+		if (match.coords.isEmpty()) {
+			return false;
 		}
-		board[0][y] = VALUE.EMPTY;
-	}
 
-	private void removeStones(GemsMatch match) {
 		// save the replacement's value.
-		VALUE currVal = board[match.replacementCoord.x][match.replacementCoord.y];
+		GEM currVal = board[match.replacementCoord.x][match.replacementCoord.y];
 
 		// remove all stones.
 		for (Coordinates c : match.coords) {
-			board[c.x][c.y] = VALUE.EMPTY;
+			board[c.x][c.y] = GEM.EMPTY;
 		}
 
 		// add better replacement.
-		board[match.replacementCoord.x][match.replacementCoord.y] = VALUE.values()[currVal.ordinal() + 1];
+		board[match.replacementCoord.x][match.replacementCoord.y] = GEM.values()[currVal.ordinal() + 1];
+
+		return true;
 	}
 
 	/**
@@ -170,10 +173,14 @@ public class GameBoard {
 	 * @return if something has matched
 	 */
 	private GemsMatch findMatchingStones(int x, int y, Move move) {
-		VALUE val = board[x][y];
 		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
 		Coordinates replacement = new Coordinates(-1, -1);
 
+		GEM val = board[x][y];
+		if (val == GEM.EMPTY) {
+			return new GemsMatch(removeStones, null);
+		}
+		
 		// go left
 		for (int currentX = x; --currentX >= 0 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
 		// go right
@@ -193,6 +200,8 @@ public class GameBoard {
 
 		if (!removeStones.isEmpty()) {
 			removeStones.add(new Coordinates(x, y));
+		} else {
+			return new GemsMatch(removeStones, null);
 		}
 
 		// Calculate replacement coordinates.
@@ -223,7 +232,9 @@ public class GameBoard {
 			replacement = new Coordinates(xMean, yMean);
 		}
 
-		assignExtraTurns(removeStones.size(), move);
+		if (move != null) {
+			assignExtraTurns(removeStones.size(), move);
+		}
 		return new GemsMatch(removeStones, replacement);
 	}
 
@@ -249,38 +260,39 @@ public class GameBoard {
 		if (m == null) {
 			return;
 		}
-		
+
 		if (validMove(m)) {
 			swap (m.row, m.column, m.row2, m.column2);
 		}
-		
+
 		int match1 = findMatchingStones(m.row, m.column, m).size();
 		int match2 = findMatchingStones(m.row2, m.column2, m).size();
 		assignExtraTurns(Math.max(match1, match2), m);
 	}
 
 	private void swap(int row, int column, int row2, int column2) {
-		VALUE tmp = this.board[row][column];
+		GEM tmp = this.board[row][column];
 		this.board[row][column] = this.board[row2][column2];
 		this.board[row2][column2] = tmp;
 	}
 
 	private boolean validMove(Move m) {
-		return (this.board[m.row][m.column] != VALUE.TREASURE && this.board[m.row2][m.column2] != VALUE.TREASURE);
+		return (this.board[m.row][m.column] != GEM.TREASURE && this.board[m.row2][m.column2] != GEM.TREASURE);
 	}
 
-	public static class Move {
+	public static class Move implements Comparable<Move> {
 
 		@Override
 		public String toString() {
-			return "Move: (" + row + ", " + column + ") " + dir + " giving " + extraTurns + " extra turns.";
+			return "Move: (" + row + ", " + column + ") " + dir + " giving " + extraTurns + " extra turns and using " + turnsUsed + " turns.";
 		}
 
 		public Move(DIRECTION d, int r, int c) {
 			dir = d;
 			row = r;
 			column = c;
-			extraTurns = -2;
+			extraTurns = -500;
+			turnsUsed = 1;
 
 			switch(d) {
 			case DOWN:
@@ -315,6 +327,21 @@ public class GameBoard {
 		public int row2;
 		public int column2;
 		public int extraTurns;
-
+		public int turnsUsed;
+		
+		
+		@Override
+		public int compareTo(Move otherMove) {
+			if (this.extraTurns - this.turnsUsed > otherMove.extraTurns - otherMove.turnsUsed)
+				return 1;
+			else if (this.extraTurns - this.turnsUsed < otherMove.extraTurns - otherMove.turnsUsed)
+				return -1;
+			else if (this.turnsUsed > otherMove.turnsUsed) {
+				return 1;
+			} else if (this.turnsUsed < otherMove.turnsUsed) {
+				return -1;
+			} else
+				return 0;
+		}
 	}
 }

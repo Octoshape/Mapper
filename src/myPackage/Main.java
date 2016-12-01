@@ -7,10 +7,10 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Arrays;
-
+import java.util.List;
 
 import myPackage.GameBoard.Move;
-import myPackage.Utils.VALUE;
+import myPackage.Utils.GEM;
 
 public class Main {
 	
@@ -19,8 +19,15 @@ public class Main {
 //		GameBoard g = new GameBoard(analyzeRGB(vals));
 //			
 //		System.out.println(g.calculateNextMove());
+		int depth = 0;
+		List<String> argsList= Arrays.asList(args);
+		if (argsList.contains("--debug")) {
+			Utils.DEBUG = true;
+		}
 		
-		int depth = Integer.parseInt(args[0]);
+		if (argsList.contains("--depth")) {
+			Utils.DEPTH = Integer.parseInt(argsList.get(argsList.indexOf("--depth") + 1));
+		}
 		
 		Thread.sleep(3000);
 		BufferedImage previousImage, image = takeScreenshot(); //ImageIO.read(new File("images\\base.png")); 
@@ -39,8 +46,16 @@ public class Main {
 			
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
-			Move nextMove = game.calculateNextMove(depth);
-			Utils.makeMove(nextMove);
+			Move nextMove = game.calculateNextMove(Utils.DEPTH);
+			
+			if (Utils.DEBUG) {
+				System.out.println("Proposed next move: " + nextMove);
+				System.out.println("Hit Enter to continue analysis (after 3 seconds)");
+				Utils.promptEnterKey();
+				Thread.sleep(3000);
+			} else {
+				Utils.makeMove(nextMove);
+			}
 		}
 	}
 
@@ -66,27 +81,27 @@ public class Main {
 		return image;
 	}
 
-	private static VALUE[][] analyzeRGB(long[][] values) {
-		VALUE[][] result = new VALUE[8][8];
+	private static GEM[][] analyzeRGB(long[][] values) {
+		GEM[][] result = new GEM[8][8];
 		for (int x = 0; x < values.length; x++) {
 			for (int y = 0; y < values.length; y++) {
 				long value = values[y][x];
 				if (value < -4300000000l)
-					result[x][y] = VALUE.valueOf("TREASURE");
+					result[x][y] = GEM.valueOf("TREASURE");
 				else if (value < -4070000000l)
-					result[x][y] = VALUE.valueOf("SILVER");
+					result[x][y] = GEM.valueOf("SILVER");
 				else if (value < -3800000000l)
-					result[x][y] = VALUE.valueOf("RED");
+					result[x][y] = GEM.valueOf("RED");
 				else if (value < -3400000000l)
-					result[x][y] = VALUE.valueOf("IRON");
+					result[x][y] = GEM.valueOf("IRON");
 				else if (value < -3100000000l)
-					result[x][y] = VALUE.valueOf("BAG");
+					result[x][y] = GEM.valueOf("BAG");
 				else if (value < -2800000000l)
-					result[x][y] = VALUE.valueOf("COPPER");
+					result[x][y] = GEM.valueOf("COPPER");
 				else if (value < -2500000000l)
-					result[x][y] = VALUE.valueOf("GREEN");
+					result[x][y] = GEM.valueOf("GREEN");
 				else if (value < -1300000000l)
-					result[x][y] = VALUE.valueOf("GOLD");
+					result[x][y] = GEM.valueOf("GOLD");
 				else
 					System.out.println("Found RGB Value outside of range.");
 			}
