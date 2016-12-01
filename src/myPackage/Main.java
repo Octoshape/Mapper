@@ -5,9 +5,13 @@ import java.awt.AWTException;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import myPackage.GameBoard.Move;
 import myPackage.Utils.GEM;
@@ -19,7 +23,8 @@ public class Main {
 //		GameBoard g = new GameBoard(analyzeRGB(vals));
 //			
 //		System.out.println(g.calculateNextMove());
-		int depth = 0;
+		int depth = 0, i = 0;
+		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
 			Utils.DEBUG = true;
@@ -46,15 +51,25 @@ public class Main {
 			
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
-			Move nextMove = game.calculateNextMove(Utils.DEPTH);
+			Move move = game.calculateNextMove(Utils.DEPTH);
+			ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
+			logger.println("At board " + (i - 1) + ":");
+			logger.println("Made move: " + move);
+			logger.println("With second move: " + move.nextMove);
+			logger.println();
 			
 			if (Utils.DEBUG) {
-				System.out.println("Proposed next move: " + nextMove);
+				System.out.println("Proposed next move: " + move);
 				System.out.println("Hit Enter to continue analysis (after 3 seconds)");
 				Utils.promptEnterKey();
 				Thread.sleep(3000);
 			} else {
-				Utils.makeMove(nextMove);
+				Move nextMove = move;
+				do {
+					Utils.makeMove(nextMove);
+					// TODO wait for the boaaaaard. think of something, faggot.
+					nextMove = nextMove.nextMove;
+				} while (nextMove != null);
 			}
 		}
 	}
@@ -67,7 +82,7 @@ public class Main {
 		
 		return gameOver == Utils.CONTINUE_VAL;
 	}
-
+	
 	private static boolean hasChanged(BufferedImage previousImage, BufferedImage image) {
 		int[] rgbPrevious = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH], rgb = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH];
 		previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);

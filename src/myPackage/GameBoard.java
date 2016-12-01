@@ -58,13 +58,13 @@ public class GameBoard {
 			for (int column = 0; column < 8; column++) {
 				if (column < 7) {
 					nextMove = new Move(DIRECTION.RIGHT, row, column);
-					bestMove = findBestMove(depth, moveBoard, nextMove, bestMove);
+					bestMove = moveBoard.findBestMove(depth, nextMove, bestMove);
 				}
 				moveBoard = new GameBoard(this);
 
 				if (row < 7) {
 					nextMove = new Move(DIRECTION.DOWN, row, column);
-					bestMove = findBestMove(depth, moveBoard, nextMove, bestMove);
+					bestMove = moveBoard.findBestMove(depth, nextMove, bestMove);
 				}
 				moveBoard = new GameBoard(this);
 			}
@@ -72,19 +72,22 @@ public class GameBoard {
 		return bestMove;
 	}
 
-	private Move findBestMove(int depth, GameBoard moveBoard, Move nextMove, Move bestMove) {
-		moveBoard.makeMove(nextMove);
+	private Move findBestMove(int depth, Move nextMove, Move bestMove) {
+		if (!makeMove(nextMove)) {
+			return bestMove;
+		}
+		
 		if (depth > 0) {
-			moveBoard.simulate(nextMove);
-			Move nextnextMove = moveBoard.calculateNextMove(depth - 1);
-			nextMove.extraTurns += nextnextMove.extraTurns;
-			nextMove.turnsUsed += nextnextMove.turnsUsed;
-			System.out.println("First move:");
-			System.out.println(nextMove);
-			System.out.println("Second move:");
-			System.out.println(nextnextMove);
-			System.out.println();
-			System.out.println();
+			simulate(nextMove);
+			nextMove.nextMove = calculateNextMove(depth - 1);
+			nextMove.totalExtraTurns += nextMove.nextMove.totalExtraTurns;
+			nextMove.totalTurnsUsed += nextMove.nextMove.totalTurnsUsed;
+//			System.out.println("First move:");
+//			System.out.println(nextMove);
+//			System.out.println("Second move:");
+//			System.out.println(nextMove.nextMove);
+//			System.out.println();
+//			System.out.println();
 			if (nextMove.compareTo(bestMove) == 1) {
 				bestMove = nextMove;
 			}
@@ -241,33 +244,36 @@ public class GameBoard {
 	private void assignExtraTurns (int amount, Move move) {
 		switch (amount) {
 		case 3:
-			move.extraTurns = -1;
+			move.setExtraTurns(-1);
 			break;
 		case 4:
-			move.extraTurns = 0;
+			move.setExtraTurns(0);
 			break;
 		case 5:
 		case 6:
 		case 7:
-			move.extraTurns = 1;
+			move.setExtraTurns(1);
 			break;
 		default:
 			break;
 		}
 	}
 
-	public void makeMove(Move m) {
-		if (m == null) {
-			return;
+	public boolean makeMove(Move m) {
+		if (m == null || !validMove(m)) {
+			return false;
 		}
 
-		if (validMove(m)) {
-			swap (m.row, m.column, m.row2, m.column2);
-		}
-
+		swap (m.row, m.column, m.row2, m.column2);
 		int match1 = findMatchingStones(m.row, m.column, m).size();
 		int match2 = findMatchingStones(m.row2, m.column2, m).size();
+		
+		if (match1 == 0 && match2 == 0) {
+			return false;
+		}
+		
 		assignExtraTurns(Math.max(match1, match2), m);
+		return true;
 	}
 
 	private void swap(int row, int column, int row2, int column2) {
@@ -284,7 +290,7 @@ public class GameBoard {
 
 		@Override
 		public String toString() {
-			return "Move: (" + row + ", " + column + ") " + dir + " giving " + extraTurns + " extra turns and using " + turnsUsed + " turns.";
+			return "Move: (" + row + ", " + column + ") " + dir + " giving " + totalExtraTurns + " extra turns and using " + totalTurnsUsed + " turns.";
 		}
 
 		public Move(DIRECTION d, int r, int c) {
@@ -292,8 +298,9 @@ public class GameBoard {
 			row = r;
 			column = c;
 			extraTurns = -500;
-			turnsUsed = 1;
-
+			totalExtraTurns = -500;
+			totalTurnsUsed = 1;
+			
 			switch(d) {
 			case DOWN:
 				row2 = row + 1;
@@ -321,24 +328,30 @@ public class GameBoard {
 			this(DIRECTION.values()[d], r, c);
 		}
 
+		public Move nextMove;
 		public DIRECTION dir;
 		public int row;
 		public int column;
 		public int row2;
 		public int column2;
-		public int extraTurns;
-		public int turnsUsed;
+		private int extraTurns;
+		public int totalTurnsUsed;
+		public int totalExtraTurns;
 		
-		
+		public void setExtraTurns(int val) {
+			totalExtraTurns = val;
+			extraTurns = val;
+		}
+
 		@Override
 		public int compareTo(Move otherMove) {
-			if (this.extraTurns - this.turnsUsed > otherMove.extraTurns - otherMove.turnsUsed)
+			if (this.totalExtraTurns + this.totalTurnsUsed > otherMove.totalExtraTurns + otherMove.totalTurnsUsed) {
 				return 1;
-			else if (this.extraTurns - this.turnsUsed < otherMove.extraTurns - otherMove.turnsUsed)
+			} else if (this.totalExtraTurns + this.totalTurnsUsed < otherMove.totalExtraTurns + otherMove.totalTurnsUsed) {
 				return -1;
-			else if (this.turnsUsed > otherMove.turnsUsed) {
+			} else if (this.totalTurnsUsed > otherMove.totalTurnsUsed) {
 				return 1;
-			} else if (this.turnsUsed < otherMove.turnsUsed) {
+			} else if (this.totalTurnsUsed < otherMove.totalTurnsUsed) {
 				return -1;
 			} else
 				return 0;
