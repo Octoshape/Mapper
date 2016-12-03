@@ -19,11 +19,13 @@ import myPackage.Utils.GEM;
 public class Main {
 	
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
-//		long[][] vals = extractRGB(ImageIO.read(new File("images\\base.png")));
+//		long[][] vals = extractRGB(ImageIO.read(new File("input\\log100.png")));
 //		GameBoard g = new GameBoard(analyzeRGB(vals));
 //			
-//		System.out.println(g.calculateNextMove());
-		int depth = 0, i = 0;
+//		System.out.println(g.calculateNextMove(1, g.calculateNextMove(0, null)));
+		
+		
+		int i = 0;
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
@@ -41,7 +43,7 @@ public class Main {
 		while(true) {
 			do {
 				previousImage = image;
-				Thread.sleep(100);
+				Thread.sleep(Utils.DELAY);
 				image = takeScreenshot();
 				if (isGameOver(image)) {
 					Utils.skipScore();
@@ -51,24 +53,51 @@ public class Main {
 			
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
-			Move move = game.calculateNextMove(Utils.DEPTH);
+			Move bestMove = null;
+			for (int depth = 0; depth <= Utils.DEPTH; depth++) {
+				bestMove = game.calculateNextMove(depth, bestMove);
+			}
 			ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
 			logger.println("At board " + (i - 1) + ":");
-			logger.println("Made move: " + move);
-			logger.println("With second move: " + move.nextMove);
+			logger.println("Making move: " + bestMove);
+			logger.println("With second move: " + bestMove.nextMove);
 			logger.println();
 			
 			if (Utils.DEBUG) {
-				System.out.println("Proposed next move: " + move);
+				System.out.println("Proposed next move: " + bestMove);
 				System.out.println("Hit Enter to continue analysis (after 3 seconds)");
 				Utils.promptEnterKey();
 				Thread.sleep(3000);
 			} else {
-				Move nextMove = move;
+				Move nextMove = bestMove;
 				do {
-					Utils.makeMove(nextMove);
-					// TODO wait for the boaaaaard. think of something, faggot.
-					nextMove = nextMove.nextMove;
+					if (game.makeMove(nextMove)) {
+							Utils.makeMove(nextMove);
+							nextMove = nextMove.nextMove;
+					} else {
+						logger.println("Couldn't make move: " + nextMove + " anymore.");
+						break;
+					}
+					
+					do {
+						previousImage = image;
+						Thread.sleep(Utils.DELAY);
+						image = takeScreenshot();
+						if (isGameOver(image)) {
+							Utils.skipScore();
+							Utils.startNewGame();
+							nextMove = null;
+						}
+					} while (hasChanged(previousImage, image));
+					
+					if (nextMove != null) {
+						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
+						logger.println("At board " + (i - 1) + ":");
+						logger.println("Trying to make move: " + nextMove);
+					}
+					
+					values = extractRGB(image);
+					game = new GameBoard(analyzeRGB(values));
 				} while (nextMove != null);
 			}
 		}

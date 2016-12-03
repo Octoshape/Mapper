@@ -8,6 +8,7 @@ import java.util.Scanner;
 import myPackage.GameBoard.Move;
 
 public class Utils {
+	public static int DELAY = 200;
 	public static int DEPTH = 0;
 	public static int X_START = 486;
 	public static int X_END = 1436;
@@ -17,7 +18,7 @@ public class Utils {
 	public static int FIELD_HEIGTH = Y_END - Y_START;
 	public static int TILE_WIDTH = 118;
 	public static int SEARCH_WIDTH = 10;
-	public static int OFFSET = 0;//TILE_WIDTH / 2;
+	public static int OFFSET = TILE_WIDTH / 2;
 	public static boolean DEBUG = false;
 
 	public static int X_CONTINUE = 1800;
