@@ -51,24 +51,20 @@ public class Main {
 				}
 			} while (hasChanged(previousImage, image));
 
-			image = ImageIO.read(new File("input\\test.png"));
+//			image = ImageIO.read(new File("input\\test.png"));
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
 			Move bestMove = null;
 			for (int depth = 0; depth <= Utils.DEPTH; depth++) {
 				bestMove = game.calculateNextMove(depth, bestMove);
 			}
-			ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
-			logger.println("At board " + (i - 1) + ":");
-			logger.println("Making move: " + bestMove);
-			logger.println("With second move: " + bestMove.nextMove);
-			logger.println();
 
 			if (Utils.DEBUG) {
-				System.out.println("Proposed next move: " + bestMove);
-				System.out.println("Hit Enter to continue analysis (after 3 seconds)");
-				Utils.promptEnterKey();
-				Thread.sleep(3000);
+				ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
+				logger.println("At board " + (i - 1) + ":");
+				logger.println("Making move: " + bestMove);
+				logger.println("With second move: " + bestMove.nextMove);
+				logger.println();
 			} else {
 				Move nextMove = bestMove;
 				do {
@@ -81,7 +77,9 @@ public class Main {
 						Utils.makeMove(nextMove);
 						nextMove = nextMove.nextMove;
 					} else {
-						logger.println("Collapsing messed up our move: " + nextMove + " completely.");
+						if (Utils.DEBUG) {
+							logger.println("Collapsing messed up our move: " + nextMove + " completely.");
+						}
 						break;
 					}
 
@@ -96,7 +94,7 @@ public class Main {
 						}
 					} while (hasChanged(previousImage, image));
 
-					if (nextMove != null) {
+					if (nextMove != null && Utils.DEBUG) {
 						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
 						logger.println("At board " + (i - 1) + ":");
 						logger.println("Trying to make move: " + nextMove);
