@@ -73,5 +73,6 @@ public class Utils {
 	public static void promptEnterKey(){
 		Scanner scanner = new Scanner(System.in);
 		scanner.nextLine();
+		scanner.close();
 	}
 }

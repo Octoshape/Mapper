@@ -81,7 +81,11 @@ public class GameBoard {
 
 		if (depth > 0) {
 			simulate(nextMove, true);
-			nextMove.nextMove = calculateNextMove(depth - 1, bestMove);
+			Move bestNextMove = nextMove.nextMove;
+			for (int currentDepth = depth - 1; currentDepth >= 0; currentDepth--){
+				bestNextMove = calculateNextMove(currentDepth, bestNextMove);
+			}
+			nextMove.nextMove = bestNextMove;
 			nextMove.totalExtraTurns += nextMove.nextMove.totalExtraTurns;
 			nextMove.totalTurnsUsed += nextMove.nextMove.totalTurnsUsed;
 			//			System.out.println("First move:");
@@ -404,7 +408,7 @@ public class GameBoard {
 		public int column;
 		public int row2;
 		public int column2;
-		private int extraTurns;
+		public int extraTurns;
 		public int totalTurnsUsed;
 		public int totalExtraTurns;
 

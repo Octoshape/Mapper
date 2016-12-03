@@ -17,29 +17,29 @@ import myPackage.GameBoard.Move;
 import myPackage.Utils.GEM;
 
 public class Main {
-	
+
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
-//		long[][] vals = extractRGB(ImageIO.read(new File("input\\log100.png")));
-//		GameBoard g = new GameBoard(analyzeRGB(vals));
-//			
-//		System.out.println(g.calculateNextMove(1, g.calculateNextMove(0, null)));
-		
-		
+		//		long[][] vals = extractRGB(ImageIO.read(new File("input\\test.png")));
+		//		GameBoard g = new GameBoard(analyzeRGB(vals));
+		//			
+		//		System.out.println(g.calculateNextMove(1, g.calculateNextMove(0, null)));
+
 		int i = 0;
+		@SuppressWarnings("resource")
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
 			Utils.DEBUG = true;
 		}
-		
+
 		if (argsList.contains("--depth")) {
 			Utils.DEPTH = Integer.parseInt(argsList.get(argsList.indexOf("--depth") + 1));
 		}
-		
+
 		Thread.sleep(3000);
 		BufferedImage previousImage, image = takeScreenshot(); //ImageIO.read(new File("images\\base.png")); 
 		Utils.startNewGame();
-		
+
 		while(true) {
 			do {
 				previousImage = image;
@@ -50,7 +50,8 @@ public class Main {
 					Utils.startNewGame();
 				}
 			} while (hasChanged(previousImage, image));
-			
+
+			image = ImageIO.read(new File("input\\test.png"));
 			long[][] values = extractRGB(image);
 			GameBoard game = new GameBoard(analyzeRGB(values));
 			Move bestMove = null;
@@ -62,7 +63,7 @@ public class Main {
 			logger.println("Making move: " + bestMove);
 			logger.println("With second move: " + bestMove.nextMove);
 			logger.println();
-			
+
 			if (Utils.DEBUG) {
 				System.out.println("Proposed next move: " + bestMove);
 				System.out.println("Hit Enter to continue analysis (after 3 seconds)");
@@ -71,14 +72,19 @@ public class Main {
 			} else {
 				Move nextMove = bestMove;
 				do {
+					/* make america great again
+					* and also proceed with subsequent moves only if they're as GOOD as initially thought
+					* (things falling down from the top might have changed the predicted surrounding area)
+					* this optimization gets more important with higher depth
+					*/
 					if (game.makeMove(nextMove)) {
-							Utils.makeMove(nextMove);
-							nextMove = nextMove.nextMove;
+						Utils.makeMove(nextMove);
+						nextMove = nextMove.nextMove;
 					} else {
-						logger.println("Couldn't make move: " + nextMove + " anymore.");
+						logger.println("Collapsing messed up our move: " + nextMove + " completely.");
 						break;
 					}
-					
+
 					do {
 						previousImage = image;
 						Thread.sleep(Utils.DELAY);
@@ -89,13 +95,13 @@ public class Main {
 							nextMove = null;
 						}
 					} while (hasChanged(previousImage, image));
-					
+
 					if (nextMove != null) {
 						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
 						logger.println("At board " + (i - 1) + ":");
 						logger.println("Trying to make move: " + nextMove);
 					}
-					
+
 					values = extractRGB(image);
 					game = new GameBoard(analyzeRGB(values));
 				} while (nextMove != null);
@@ -108,10 +114,10 @@ public class Main {
 		for (int x = Utils.X_CONTINUE; x < Utils.X_CONTINUE + Utils.CONTINUE_SIZE; x++ )
 			for (int y = Utils.Y_CONTINUE; y < Utils.Y_CONTINUE + Utils.CONTINUE_SIZE; y++ )
 				gameOver += image.getRGB(x, y);
-		
+
 		return gameOver == Utils.CONTINUE_VAL;
 	}
-	
+
 	private static boolean hasChanged(BufferedImage previousImage, BufferedImage image) {
 		int[] rgbPrevious = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH], rgb = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH];
 		previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
@@ -150,7 +156,7 @@ public class Main {
 					System.out.println("Found RGB Value outside of range.");
 			}
 		}
-		
+
 		return result;
 	}
 
