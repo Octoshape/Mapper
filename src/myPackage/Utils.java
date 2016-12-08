@@ -27,7 +27,6 @@ public class Utils {
 	public static long CONTINUE_VAL = -16497979377l;
 	public static boolean SNAPSHOT = false;
 
-
 	public static enum GEM { EMPTY, COPPER, SILVER, GOLD, BAG, IRON, GREEN, RED, TREASURE };
 	public static enum DIRECTION { UP, RIGHT, DOWN, LEFT }
 
@@ -37,7 +36,7 @@ public class Utils {
 		click(570, 780); // Click the Treasure Hunt button.
 		Thread.sleep(500);
 		click(970, 860); // Click the "Use a Map" button.
-		Thread.sleep(5000);
+		Thread.sleep(7000);
 	}
 
 	public static void skipScore() throws AWTException, InterruptedException {
