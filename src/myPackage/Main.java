@@ -57,6 +57,9 @@ public class Main {
 			Move bestMove = null;
 			for (int depth = 0; depth <= Utils.DEPTH; depth++) {
 				bestMove = game.calculateNextMove(depth, bestMove);
+				if (depth == 0 && bestMove.extraTurns == 1) {
+					break; // Always take first 5.
+				}
 			}
 
 			if (Utils.DEBUG) {
@@ -66,43 +69,44 @@ public class Main {
 				logger.println("With second move: " + bestMove.nextMove);
 				logger.println();
 			} else {
-				Move nextMove = bestMove;
-				do {
-					/* make america great again
-					* and also proceed with subsequent moves only if they're as GOOD as initially thought
-					* (things falling down from the top might have changed the predicted surrounding area)
-					* this optimization gets more important with higher depth
-					*/
-					if (game.makeMove(nextMove)) {
-						Utils.makeMove(nextMove);
-						nextMove = nextMove.nextMove;
-					} else {
-						if (Utils.DEBUG) {
-							logger.println("Collapsing messed up our move: " + nextMove + " completely.");
-						}
-						break;
-					}
-
-					do {
-						previousImage = image;
-						Thread.sleep(Utils.DELAY);
-						image = takeScreenshot();
-						if (isGameOver(image)) {
-							Utils.skipScore();
-							Utils.startNewGame();
-							nextMove = null;
-						}
-					} while (hasChanged(previousImage, image));
-
-					if (nextMove != null && Utils.DEBUG) {
-						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
-						logger.println("At board " + (i - 1) + ":");
-						logger.println("Trying to make move: " + nextMove);
-					}
-
-					values = extractRGB(image);
-					game = new GameBoard(analyzeRGB(values));
-				} while (nextMove != null);
+				Utils.makeMove(bestMove);
+//				Move nextMove = bestMove;
+//				do {
+//					/* make america great again
+//					* and also proceed with subsequent moves only if they're as GOOD as initially thought
+//					* (things falling down from the top might have changed the predicted surrounding area)
+//					* this optimization gets more important with higher depth
+//					*/
+//					if (game.makeMove(nextMove)) {
+//						Utils.makeMove(nextMove);
+//						nextMove = nextMove.nextMove;
+//					} else {
+//						if (Utils.DEBUG) {
+//							logger.println("Collapsing messed up our move: " + nextMove + " completely.");
+//						}
+//						break;
+//					}
+//
+//					do {
+//						previousImage = image;
+//						Thread.sleep(Utils.DELAY);
+//						image = takeScreenshot();
+//						if (isGameOver(image)) {
+//							Utils.skipScore();
+//							Utils.startNewGame();
+//							nextMove = null;
+//						}
+//					} while (hasChanged(previousImage, image));
+//
+//					if (nextMove != null && Utils.DEBUG) {
+//						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
+//						logger.println("At board " + (i - 1) + ":");
+//						logger.println("Trying to make move: " + nextMove);
+//					}
+//
+//					values = extractRGB(image);
+//					game = new GameBoard(analyzeRGB(values));
+//				} while (nextMove != null);
 			}
 		}
 	}
