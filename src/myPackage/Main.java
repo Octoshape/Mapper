@@ -13,8 +13,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import myPackage.GameBoard.Move;
-import myPackage.Utils.GEM;
+import myPackage.Utils.MAP_GEM;
 
 public class Main {
 
@@ -23,9 +22,8 @@ public class Main {
 		//		GameBoard g = new GameBoard(analyzeRGB(vals));
 		//			
 		//		System.out.println(g.calculateNextMove(1, g.calculateNextMove(0, null)));
-
+		//		BufferedImage bI = ImageIO.read(new File("input\\my_turn.png"));
 		int i = 0;
-		@SuppressWarnings("resource")
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
@@ -36,80 +34,61 @@ public class Main {
 			Utils.DEPTH = Integer.parseInt(argsList.get(argsList.indexOf("--depth") + 1));
 		}
 
+		if (argsList.contains("--mode")) {
+			Utils.MODE = argsList.get(argsList.indexOf("--mode") + 1);
+		}
+
 		Thread.sleep(3000);
 		BufferedImage previousImage, image = takeScreenshot(); //ImageIO.read(new File("images\\base.png")); 
 		Utils.startNewGame();
 
-		while(true) {
-			do {
-				previousImage = image;
-				Thread.sleep(Utils.DELAY);
-				image = takeScreenshot();
-				if (isGameOver(image)) {
-					Utils.skipScore();
-					Utils.startNewGame();
-				}
-			} while (hasChanged(previousImage, image));
+		if (Utils.MODE == "M") {
+			while(true) {
+				do {
+					previousImage = image;
+					Thread.sleep(Utils.DELAY);
+					image = takeScreenshot();
+					if (isGameOver(image)) {
+						Utils.skipScore();
+						Utils.startNewGame();
+					}
+				} while (hasChanged(previousImage, image));
 
-//			image = ImageIO.read(new File("input\\test.png"));
-			long[][] values = extractRGB(image);
-			GameBoard game = new GameBoard(analyzeRGB(values));
-			Move bestMove = null;
-			for (int depth = 0; depth <= Utils.DEPTH; depth++) {
-				bestMove = game.calculateNextMove(depth, bestMove);
-				if (depth == 0 && bestMove.extraTurns == 1) {
-					break; // Always take first 5.
+				long[][] values = extractRGB(image);
+				GameBoard game = new GameBoard(analyzeRGB(values));
+				Move bestMove = null;
+				for (int depth = 0; depth <= Utils.DEPTH; depth++) {
+					bestMove = game.calculateNextMove(depth, bestMove);
+					if (depth == 0 && bestMove.extraTurns == 1) {
+						break; // Always take first 5.
+					}
 				}
-			}
 
-			if (Utils.DEBUG) {
-				ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
-				logger.println("At board " + (i - 1) + ":");
-				logger.println("Making move: " + bestMove);
-				logger.println("With second move: " + bestMove.nextMove);
-				logger.println();
-			} else {
+				if (Utils.DEBUG) {
+					ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
+					logger.println("At board " + (i - 1) + ":");
+					logger.println("Making move: " + bestMove);
+					logger.println("With second move: " + bestMove.nextMove);
+					logger.println();
+				}
 				Utils.makeMove(bestMove);
-//				Move nextMove = bestMove;
-//				do {
-//					/* make america great again
-//					* and also proceed with subsequent moves only if they're as GOOD as initially thought
-//					* (things falling down from the top might have changed the predicted surrounding area)
-//					* this optimization gets more important with higher depth
-//					*/
-//					if (game.makeMove(nextMove)) {
-//						Utils.makeMove(nextMove);
-//						nextMove = nextMove.nextMove;
-//					} else {
-//						if (Utils.DEBUG) {
-//							logger.println("Collapsing messed up our move: " + nextMove + " completely.");
-//						}
-//						break;
-//					}
-//
-//					do {
-//						previousImage = image;
-//						Thread.sleep(Utils.DELAY);
-//						image = takeScreenshot();
-//						if (isGameOver(image)) {
-//							Utils.skipScore();
-//							Utils.startNewGame();
-//							nextMove = null;
-//						}
-//					} while (hasChanged(previousImage, image));
-//
-//					if (nextMove != null && Utils.DEBUG) {
-//						ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
-//						logger.println("At board " + (i - 1) + ":");
-//						logger.println("Trying to make move: " + nextMove);
-//					}
-//
-//					values = extractRGB(image);
-//					game = new GameBoard(analyzeRGB(values));
-//				} while (nextMove != null);
 			}
 		}
 	}
+
+	private static boolean t() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	//	private static void color(BufferedImage bI) throws IOException {
+	//		long gameOver = 0;
+	//		for (int x = Utils.MF_X_HIS_TURN; x < Utils.MF_X_HIS_TURN + Utils.MF_X_TURN_SIZE; x++ )
+	//			for (int y = Utils.MF_Y_TURN; y < Utils.MF_Y_TURN + Utils.MF_Y_TURN_SIZE; y++ )
+	//				gameOver += bI.getRGB(x, y);
+	//		
+	//		System.out.println(gameOver);
+	//	}
 
 	private static boolean isGameOver(BufferedImage image) {
 		long gameOver = 0;
@@ -117,7 +96,7 @@ public class Main {
 			for (int y = Utils.Y_CONTINUE; y < Utils.Y_CONTINUE + Utils.CONTINUE_SIZE; y++ )
 				gameOver += image.getRGB(x, y);
 
-		return gameOver == Utils.CONTINUE_VAL;
+		return gameOver == Utils.M_CONTINUE_VAL;
 	}
 
 	private static boolean hasChanged(BufferedImage previousImage, BufferedImage image) {
@@ -133,27 +112,27 @@ public class Main {
 		return image;
 	}
 
-	private static GEM[][] analyzeRGB(long[][] values) {
-		GEM[][] result = new GEM[8][8];
+	private static MAP_GEM[][] analyzeRGB(long[][] values) {
+		MAP_GEM[][] result = new MAP_GEM[8][8];
 		for (int x = 0; x < values.length; x++) {
 			for (int y = 0; y < values.length; y++) {
 				long value = values[y][x];
 				if (value < -4300000000l)
-					result[x][y] = GEM.valueOf("TREASURE");
+					result[x][y] = MAP_GEM.valueOf("TREASURE");
 				else if (value < -4070000000l)
-					result[x][y] = GEM.valueOf("SILVER");
+					result[x][y] = MAP_GEM.valueOf("SILVER");
 				else if (value < -3800000000l)
-					result[x][y] = GEM.valueOf("RED");
+					result[x][y] = MAP_GEM.valueOf("RED");
 				else if (value < -3400000000l)
-					result[x][y] = GEM.valueOf("IRON");
+					result[x][y] = MAP_GEM.valueOf("IRON");
 				else if (value < -3100000000l)
-					result[x][y] = GEM.valueOf("BAG");
+					result[x][y] = MAP_GEM.valueOf("BAG");
 				else if (value < -2800000000l)
-					result[x][y] = GEM.valueOf("COPPER");
+					result[x][y] = MAP_GEM.valueOf("COPPER");
 				else if (value < -2500000000l)
-					result[x][y] = GEM.valueOf("GREEN");
+					result[x][y] = MAP_GEM.valueOf("GREEN");
 				else if (value < -1300000000l)
-					result[x][y] = GEM.valueOf("GOLD");
+					result[x][y] = MAP_GEM.valueOf("GOLD");
 				else
 					System.out.println("Found RGB Value outside of range.");
 			}
