@@ -1,16 +1,29 @@
 package myPackage;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-import myPackage.Utils.DIRECTION;
 import myPackage.Utils.MAP_GEM;
 
 public abstract class AbstractGameBoard {
-
 	
+	protected AbstractGameBoard(long[][] vals) {
+		board = new IGem[8][8];
+		initBoard(vals);
+	}
 
-	public MAP_GEM[][] board;
+	protected AbstractGameBoard(AbstractGameBoard otherBoard) {
+		board = new IGem[8][8];
+		for (int i = 0; i < 8; i++) 
+			for (int j = 0; j < 8; j++) 
+				board[i][j] = otherBoard.board[i][j];
+	}
+
+
+	protected abstract void initBoard(long[][] values);
+
+	public IGem[][] board;
 
 	@Override
 	public String toString() {
@@ -23,10 +36,6 @@ public abstract class AbstractGameBoard {
 			result += "\n";
 		}
 		return result;
-	}
-
-	public MAP_GEM[][] getBoard() {
-		return board;
 	}
 
 	protected void collapse() {
@@ -47,29 +56,12 @@ public abstract class AbstractGameBoard {
 		}
 	}
 
-	protected void removeStones(GemsMatch match) {
-		if (match.coords.isEmpty()) {
-			return;
-		}
-	
-		// save the replacement's value.
-		MAP_GEM currVal = board[match.replacementCoord.x][match.replacementCoord.y];
-	
-		// remove all stones.
-		for (Coordinates c : match.coords) {
-			board[c.x][c.y] = MAP_GEM.EMPTY;
-		}
-	
-		// add better replacement.
-		board[match.replacementCoord.x][match.replacementCoord.y] = MAP_GEM.values()[currVal.ordinal() + 1];
-	}
-
-	protected GemsMatch findMatchingStones(int x, int y, Move move) {
+	protected GemsMatch findMatchingStones(int x, int y, BoardMove move) {
 		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
 		Coordinates replacement = new Coordinates(-1, -1);
 	
-		MAP_GEM val = board[x][y];
-		if (val == MAP_GEM.EMPTY) {
+		IGem val = board[x][y];
+		if (val == MAP_GEM.EMPTY || val == MAP_GEM.TREASURE) {
 			return new GemsMatch(removeStones, replacement);
 		}
 	
@@ -149,7 +141,7 @@ public abstract class AbstractGameBoard {
 		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
 		Coordinates replacement = new Coordinates(-1, -1);
 	
-		MAP_GEM val = board[x][y];
+		IGem val = board[x][y];
 	
 		// go left
 		for (int currentX = x; --currentX >= 0 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
@@ -195,34 +187,8 @@ public abstract class AbstractGameBoard {
 		return new GemsMatch(removeStones, replacement);
 	}
 
-	public boolean makeMove(Move m) {
-		if (m == null || !validMove(m)) {
-			return false;
-		}
-	
-		swap (m.row, m.column, m.row2, m.column2);
-		int match1 = findMatchingStones(m.row, m.column, m).size();
-		int match2 = findMatchingStones(m.row2, m.column2, m).size();
-	
-		if (match1 == 0 && match2 == 0) {
-			return false;
-		}
-	
-		assignExtraTurns(Math.max(match1, match2), m);
-		return true;
-	}
 
-	private void swap(int row, int column, int row2, int column2) {
-		MAP_GEM tmp = this.board[row][column];
-		this.board[row][column] = this.board[row2][column2];
-		this.board[row2][column2] = tmp;
-	}
-
-	private boolean validMove(Move m) {
-		return (this.board[m.row][m.column] != MAP_GEM.TREASURE && this.board[m.row2][m.column2] != MAP_GEM.TREASURE);
-	}
-
-	protected void assignExtraTurns(int amount, Move move) {
+	protected void assignExtraTurns(int amount, BoardMove move) {
 		switch (amount) {
 		case 3:
 			move.setExtraTurns(-1);
@@ -241,5 +207,12 @@ public abstract class AbstractGameBoard {
 		
 		move.biggestMatch = amount;
 	}
-	
+
+	public abstract Move calculateNextMove(int depth, BoardMove bestMove);
+
+	protected void swap(int row, int column, int row2, int column2) {
+		IGem tmp = this.board[row][column];
+		this.board[row][column] = this.board[row2][column2];
+		this.board[row2][column2] = tmp;
+	}
 }
