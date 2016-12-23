@@ -17,6 +17,7 @@ public class Utils {
 
 	// GENERAL CONSTANTS
 	public static final int DELAY = 200;
+	public static final int CAST_DELAY = 1000;
 	public static final int X_START = 486;
 	public static final int X_END = 1436;
 	public static final int Y_START = 80;
@@ -35,7 +36,7 @@ public class Utils {
 	public static final int Y_CARD4_POS = 940;
 	public static boolean DEBUG = false;
 	public static int DEPTH = 1;
-	public static String MODE = "MF"; // M & MF
+	public static String MODE = "M"; // M & MF
 	public static boolean SNAPSHOT = false;
 	public static boolean SKIP;
 
@@ -55,6 +56,10 @@ public class Utils {
 	public static boolean MF_CAST_ON_TYRI = false;
 
 	// M CONSTANTS
+	public static int M_X_NO_MORE_MAPS = 1005;
+	public static int M_Y_NO_MORE_MAPS = 335;
+	public static int M_NO_MORE_MAPS_SIZE = 50;
+	public static long M_NO_MORE_MAPS_VAL = -22513337150l;
 	public static int M_X_CONTINUE = 1800;
 	public static int M_Y_CONTINUE = 950;
 	public static int M_CONTINUE_SIZE = 50;
@@ -66,22 +71,30 @@ public class Utils {
 	public static enum DIRECTION { UP, RIGHT, DOWN, LEFT }
 
 	public static void startNewGame() throws AWTException, InterruptedException {
-		if (MODE == "M") {
+		if (MODE.equals("M")) {
 			click(570, 980); // Click the Minigame button.
 			Thread.sleep(500);
 			click(570, 780); // Click the Treasure Hunt button.
 			Thread.sleep(500);
 			click(970, 860); // Click the "Use a Map" button.
 			Thread.sleep(7000);
-		} else if (MODE == "MF") {
-			click(960, 575); // Click Broken Spire
-			Thread.sleep(1000);
-			click(1130, 350); // Click Challenges
-			Thread.sleep(1000);
+		} else if (MODE.equals("MF")) {
+			click(870, 320); // Click Broken Spire from Zul'Kari.
+			Thread.sleep(1500);
+			click(1130, 350); // Click Challenges.
+			Thread.sleep(2000);
 			click(1700, 730); // Click Fight!!!!!!!
 			Thread.sleep(1000);
 			click(1000, 500); // Click to start fight.
 		}
+	}
+	
+	public static void exitNoMoreMaps() throws InterruptedException, AWTException {
+		System.out.println("exit no more maps.");
+		click(1280, 350);
+		Thread.sleep(500);
+		click(1360, 200);
+		Thread.sleep(2000);
 	}
 
 	public static void skipScore() throws AWTException, InterruptedException {
@@ -97,23 +110,23 @@ public class Utils {
 
 	private static void castOnBoard(Cast c) throws AWTException, InterruptedException {
 		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(500);
+		Thread.sleep(CAST_DELAY);
 		click(X_CAST, Y_CAST); // Click the cast button.
-		Thread.sleep(500);
+		Thread.sleep(CAST_DELAY);
 		clickOnBoard(c.getX(), c.getY()); // Click the cast target.
 	}
 
 	public static void castOnCard(Cast c) throws AWTException, InterruptedException {
 		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(500);
+		Thread.sleep(CAST_DELAY);
 		click(X_CAST, Y_CAST); // Click the cast button.
-		Thread.sleep(500);
+		Thread.sleep(CAST_DELAY);
 		click(c.getX(), c.getY()); // Click the cast target.
 	}
 
 	public static void cast(Cast c) throws AWTException, InterruptedException {
 		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(500);
+		Thread.sleep(CAST_DELAY);
 		click(X_CAST, Y_CAST); // Click the cast button.
 	}
 
@@ -208,16 +221,25 @@ public class Utils {
 			for (int x = Utils.M_X_CONTINUE; x < Utils.M_X_CONTINUE + Utils.M_CONTINUE_SIZE; x++ )
 				for (int y = Utils.M_Y_CONTINUE; y < Utils.M_Y_CONTINUE + Utils.M_CONTINUE_SIZE; y++ )
 					gameOver += image.getRGB(x, y);
-
+			
 			return gameOver == Utils.M_CONTINUE_VAL;
 		} else {
 			long gameOver = 0;
 			for (int x = Utils.MF_X_DEFEAT; x < Utils.MF_X_DEFEAT + Utils.MF_DEFEAT_WIDTH; x++ )
 				for (int y = Utils.MF_Y_DEFEAT; y < Utils.MF_Y_DEFEAT + Utils.MF_DEFEAT_HEIGHT; y++ )
 					gameOver += image.getRGB(x, y);
-
+			
 			return gameOver == Utils.MF_DEFEAT_VAL;
 		}
+	}
+	
+	public static boolean noMoreMaps(BufferedImage image) {
+		long noMoreMaps = 0;
+		for (int x = Utils.M_X_NO_MORE_MAPS; x < Utils.M_X_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; x++ )
+			for (int y = Utils.M_Y_NO_MORE_MAPS; y < Utils.M_Y_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; y++ )
+				noMoreMaps += image.getRGB(x, y);
+
+		return noMoreMaps == Utils.M_NO_MORE_MAPS_VAL;
 	}
 
 	public static BufferedImage takeScreenshot() throws AWTException {

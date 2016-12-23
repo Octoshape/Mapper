@@ -12,10 +12,10 @@ import javax.imageio.ImageIO;
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
-		//		BufferedImage bI = ImageIO.read(new File("input\\defeat.png"));
-		//		color(bI);
-		//		GameBoard gb = new GameBoard(Utils.extractRGB(bI));
-		//		System.out.println(gb);
+//		BufferedImage bI = ImageIO.read(new File("input\\nomaps.png"));
+//		color(bI);
+//		GameBoard gb = new GameBoard(Utils.extractRGB(bI));
+//		System.out.println(gb);
 		int i = 0;
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
@@ -28,7 +28,7 @@ public class Main {
 		if (argsList.contains("--mode")) {
 			Utils.MODE = argsList.get(argsList.indexOf("--mode") + 1);
 		}
-
+		
 		Thread.sleep(3000);
 		BufferedImage previousImage, image = Utils.takeScreenshot();
 		Utils.startNewGame();
@@ -43,18 +43,23 @@ public class Main {
 					image = Utils.takeScreenshot();
 					if (Utils.isGameOver(image)) {
 						Utils.skipScore();
+						if (Utils.MODE.equals("MF")) {
+							Utils.MODE = "M";
+						}
+						Utils.startNewGame();
+					} else if (Utils.noMoreMaps(image)) {
+						Utils.exitNoMoreMaps();
+						Utils.MODE = "MF";
 						Utils.startNewGame();
 					}
 				} while (Utils.hasBoardMoved(previousImage, image));
 
 				long[][] vals = Utils.extractRGB(image);
 
-				if (Utils.MODE == "M") {
+				if (Utils.MODE.equals("M")) {
 					board = new TreasureBoard(vals);
 					if (Utils.SKIP) {
 						Utils.SKIP = false;
-						System.out.println("Skipped \"frame\", found bad RGB values.");
-						Thread.sleep(2000);
 						continue;
 					}
 					for (int depth = 0; depth <= Utils.DEPTH; depth++) {
@@ -63,7 +68,7 @@ public class Main {
 							break; // Always take first 5.
 						}
 					}
-				} else if (Utils.MODE == "MF") {
+				} else if (Utils.MODE.equals("MF")) {
 					if (Utils.isMyTurn(image)) {
 						board = new GameBoard(vals);
 						if (Utils.SKIP) {
@@ -94,12 +99,12 @@ public class Main {
 		}
 	}
 
-	//	private static void color(BufferedImage bI) throws IOException {
-	//		long gameOver = 0;
-	//		for (int x = Utils.MF_X_DEFEAT; x < Utils.MF_X_DEFEAT + Utils.MF_DEFEAT_WIDTH; x++ )
-	//			for (int y = Utils.MF_Y_DEFEAT; y < Utils.MF_Y_DEFEAT + Utils.MF_DEFEAT_HEIGHT; y++ )
-	//				gameOver += bI.getRGB(x, y);
-	//
-	//		System.out.println(gameOver);
-	//	}
+		private static void color(BufferedImage bI) throws IOException {
+			long gameOver = 0;
+			for (int x = Utils.M_X_NO_MORE_MAPS; x < Utils.M_X_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; x++ )
+				for (int y = Utils.M_Y_NO_MORE_MAPS; y < Utils.M_Y_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; y++ )
+					gameOver += bI.getRGB(x, y);
+	
+			System.out.println(gameOver);
+		}
 }	
