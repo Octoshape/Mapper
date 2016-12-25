@@ -110,17 +110,10 @@ public abstract class AbstractBoard {
 			
 			if (leftright.size() > 1 && updown.size() > 1) {
 				// cross
-				if (removeStones.size() % 2 == 0) {
-					Utils.SNAPSHOT = true;
-				}
-	
 				replacement = new Coordinates(x, y);
 	
 			} else {
 				// line
-				if (removeStones.size() % 2 == 0) {
-					Utils.SNAPSHOT = true;
-				}
 				int xMean = 0, yMean = 0;
 				for (Coordinates c : removeStones) {
 					xMean += c.x;
@@ -169,9 +162,6 @@ public abstract class AbstractBoard {
 	
 		} else {
 			// line
-			if (removeStones.size() % 2 == 0) {
-				Utils.SNAPSHOT = true;
-			}
 			int xMean = 0, yMean = 0;
 			for (Coordinates c : removeStones) {
 				xMean += c.x;
