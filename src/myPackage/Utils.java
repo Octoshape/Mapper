@@ -80,14 +80,13 @@ public class Utils {
 			Thread.sleep(1500);
 			click(1130, 350); // Click Challenges.
 			Thread.sleep(2000);
-			click(1700, 730); // Click Fight!!!!!!!
+			click(1700, 730); // Click Fight.
 			Thread.sleep(1000);
 			click(1000, 500); // Click to start fight.
 		}
 	}
 	
 	public static void exitNoMoreMaps() throws InterruptedException, AWTException {
-		System.out.println("exit no more maps.");
 		click(1280, 350);
 		Thread.sleep(500);
 		click(1360, 200);
