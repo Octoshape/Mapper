@@ -10,7 +10,6 @@ public class AbstractGameBoard extends AbstractBoard {
 
 	public AbstractGameBoard(long[][] vals) {
 		super(vals);
-		counts = new int[] {0, 0, 0, 0, 0, 0, 0};
 	}
 
 	public AbstractGameBoard(AbstractGameBoard otherBoard) {
@@ -111,7 +110,7 @@ public class AbstractGameBoard extends AbstractBoard {
 	/*** HELPER METHODS ***/
 	
 	protected void getStoneCount() {
-		counts = new int[] {0, 0, 0, 0, 0, 0, 0};
+		counts = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				int index = ((GEM)board[i][j]).ordinal();

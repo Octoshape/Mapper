@@ -33,6 +33,7 @@ public class Main {
 		BufferedImage previousImage, image = Utils.takeScreenshot();
 
 		while(true) { // Never stop.
+			logger.flush();
 			AbstractBoard board = null;
 			Move bestMove = null;
 			if (skipCounter > 20) {

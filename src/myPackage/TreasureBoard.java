@@ -133,6 +133,10 @@ public class TreasureBoard extends AbstractBoard {
 	
 	@Override
 	protected void removeStones(GemsMatch match) {
+		if (match.coords.isEmpty()) {
+			return;
+		}
+
 		// save the replacement's value.
 		MAP_GEM currVal = (MAP_GEM)board[match.replacementCoord.x][match.replacementCoord.y];
 		

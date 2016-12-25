@@ -208,10 +208,6 @@ public abstract class AbstractBoard {
 	}
 
 	protected void removeStones(GemsMatch match) {
-		if (match.coords.isEmpty()) {
-			return;
-		}
-
 		// remove all stones.
 		for (Coordinates c : match.coords) {
 			board[c.x][c.y] = MAP_GEM.EMPTY;
