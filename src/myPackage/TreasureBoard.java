@@ -3,13 +3,13 @@ package myPackage;
 import myPackage.Utils.DIRECTION;
 import myPackage.Utils.MAP_GEM;
 
-public class TreasureBoard extends AbstractGameBoard {
+public class TreasureBoard extends AbstractBoard {
 
 	public TreasureBoard(long[][] vals) {
 		super(vals);
 	}
 
-	public TreasureBoard(AbstractGameBoard otherBoard) {
+	public TreasureBoard(AbstractBoard otherBoard) {
 		super(otherBoard);
 	}
 

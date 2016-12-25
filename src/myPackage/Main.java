@@ -12,11 +12,10 @@ import javax.imageio.ImageIO;
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
-//		BufferedImage bI = ImageIO.read(new File("input\\nomaps.png"));
+//		BufferedImage bI = ImageIO.read(new File("input\\service.png"));
 //		color(bI);
-//		GameBoard gb = new GameBoard(Utils.extractRGB(bI));
-//		System.out.println(gb);
-		int i = 0;
+		
+		int i = 0, skipCounter = 0;
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
@@ -28,14 +27,21 @@ public class Main {
 		if (argsList.contains("--mode")) {
 			Utils.MODE = argsList.get(argsList.indexOf("--mode") + 1);
 		}
-		
-		Thread.sleep(3000);
-		BufferedImage previousImage, image = Utils.takeScreenshot();
-		Utils.startNewGame();
 
-		while(true) {
-			AbstractGameBoard board = null;
+		Thread.sleep(3000); // Wait for user to tab into game.
+		Utils.startNewGame();
+		BufferedImage previousImage, image = Utils.takeScreenshot();
+
+		while(true) { // Never stop.
+			AbstractBoard board = null;
 			Move bestMove = null;
+			if (skipCounter > 20) {
+				Utils.click(500, 500); // Skip daily login bonus screen. (hopefully)
+				Thread.sleep(2000);
+				Utils.MODE = "M";
+				Utils.startNewGame();
+				skipCounter = 0;
+			}
 			try {
 				do {
 					previousImage = image;
@@ -47,7 +53,10 @@ public class Main {
 							Utils.MODE = "M";
 						}
 						Utils.startNewGame();
-					} else if (Utils.noMoreMaps(image)) {
+					} else if (Utils.isServicePopupShowing(image)) {
+						Utils.skipServicePopup();
+						Utils.startNewGame();
+					} else if (Utils.MODE.equals("M") && Utils.noMoreMaps(image)) {
 						Utils.exitNoMoreMaps();
 						Utils.MODE = "MF";
 						Utils.startNewGame();
@@ -59,6 +68,7 @@ public class Main {
 				if (Utils.MODE.equals("M")) {
 					board = new TreasureBoard(vals);
 					if (Utils.SKIP) {
+						skipCounter++;
 						Utils.SKIP = false;
 						continue;
 					}
@@ -70,13 +80,14 @@ public class Main {
 					}
 				} else if (Utils.MODE.equals("MF")) {
 					if (Utils.isMyTurn(image)) {
-						board = new GameBoard(vals);
+						board = new MapFarmGameBoard(vals);
 						if (Utils.SKIP) {
+							skipCounter++;
 							Utils.SKIP = false;
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
-						((GameBoard)board).updateCardsAndStatus(image);
+						((MapFarmGameBoard)board).updateCardsAndStatus(image);
 						bestMove = board.calculateNextMove(0, null);
 					} else {
 						continue;
@@ -89,6 +100,7 @@ public class Main {
 					logger.println("Making move: " + bestMove);
 					logger.println();
 				}
+				skipCounter = 0;
 				Utils.makeMove(bestMove);
 			} catch (Exception e) {
 				logger.println("Exception " + e.getMessage() + " thrown in Main with:\n");
@@ -99,12 +111,12 @@ public class Main {
 		}
 	}
 
-		private static void color(BufferedImage bI) throws IOException {
-			long gameOver = 0;
-			for (int x = Utils.M_X_NO_MORE_MAPS; x < Utils.M_X_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; x++ )
-				for (int y = Utils.M_Y_NO_MORE_MAPS; y < Utils.M_Y_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; y++ )
-					gameOver += bI.getRGB(x, y);
-	
-			System.out.println(gameOver);
-		}
+	private static void color(BufferedImage bI) throws IOException {
+		long gameOver = 0;
+		for (int x = Utils.M_X_SERVICE; x < Utils.M_X_SERVICE + Utils.M_SERVICE_SIZE; x++ )
+			for (int y = Utils.M_Y_SERVICE; y < Utils.M_Y_SERVICE + Utils.M_SERVICE_SIZE; y++ )
+				gameOver += bI.getRGB(x, y);
+
+		System.out.println(gameOver);
+	}
 }	

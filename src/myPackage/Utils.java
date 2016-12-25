@@ -7,14 +7,13 @@ import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.util.Scanner;
 
-import myPackage.GameBoard.CARD;
-import myPackage.GameBoard.CARD.STATUS;
+import myPackage.CARD;
+import myPackage.CARD.STATUS;
 
 
 public class Utils {
-
+	
 	// GENERAL CONSTANTS
 	public static final int DELAY = 200;
 	public static final int CAST_DELAY = 1000;
@@ -37,7 +36,6 @@ public class Utils {
 	public static boolean DEBUG = false;
 	public static int DEPTH = 1;
 	public static String MODE = "M"; // M & MF
-	public static boolean SNAPSHOT = false;
 	public static boolean SKIP;
 
 	// MF CONSTANTS
@@ -46,24 +44,23 @@ public class Utils {
 	public static final int MF_Y_TURN = 10;
 	public static final int MF_X_TURN_SIZE = 40;
 	public static final int MF_Y_TURN_SIZE = 50;
-	public static final long MF_MY_TURN_VAL = -15746790052l;
-	public static final long MF_HIS_TURN_VAL = -15888737492l;
 	public static final int MF_X_DEFEAT = 740;
 	public static final int MF_Y_DEFEAT = 170;
 	public static final int MF_DEFEAT_WIDTH = 440;
 	public static final int MF_DEFEAT_HEIGHT = 80;
-	public static final long MF_DEFEAT_VAL = -229951078962l;
-	public static boolean MF_CAST_ON_TYRI = false;
 
 	// M CONSTANTS
 	public static int M_X_NO_MORE_MAPS = 1005;
 	public static int M_Y_NO_MORE_MAPS = 335;
 	public static int M_NO_MORE_MAPS_SIZE = 50;
-	public static long M_NO_MORE_MAPS_VAL = -22513337150l;
+
 	public static int M_X_CONTINUE = 1800;
 	public static int M_Y_CONTINUE = 950;
 	public static int M_CONTINUE_SIZE = 50;
-	public static long M_CONTINUE_VAL = -16495604602l;
+	public static int M_X_SERVICE = 890;
+	public static int M_Y_SERVICE = 330;
+	public static int M_SERVICE_SIZE = 60;
+
 
 	// Enums
 	public static enum MAP_GEM implements IGem { EMPTY, COPPER, SILVER, GOLD, BAG, IRON, GREEN, RED, TREASURE };
@@ -150,7 +147,7 @@ public class Utils {
 		} else {
 			Cast cast = (Cast)nextMove;
 			switch (cast.getTarget()) {
-			case CARD:
+			case ALLY:
 				castOnCard(cast);
 				break;
 			case BOARD:
@@ -177,12 +174,6 @@ public class Utils {
 		bot.mouseMove(1, 1);
 	}
 
-	public static void promptEnterKey(){
-		Scanner scanner = new Scanner(System.in);
-		scanner.nextLine();
-		scanner.close();
-	}
-
 	public static boolean isMyTurn(BufferedImage image) {
 		long myTurn = 0, hisTurn = 0;
 
@@ -194,7 +185,7 @@ public class Utils {
 			for (int y = Utils.MF_Y_TURN; y < Utils.MF_Y_TURN + Utils.MF_Y_TURN_SIZE; y++ )
 				myTurn += image.getRGB(x, y);
 
-		return myTurn != Utils.MF_MY_TURN_VAL && hisTurn == Utils.MF_HIS_TURN_VAL;
+		return myTurn != Pixel.MF_MY_TURN_VAL && hisTurn == Pixel.MF_HIS_TURN_VAL;
 	}
 
 	public static long[][] extractRGB(BufferedImage image) {
@@ -222,14 +213,14 @@ public class Utils {
 				for (int y = Utils.M_Y_CONTINUE; y < Utils.M_Y_CONTINUE + Utils.M_CONTINUE_SIZE; y++ )
 					gameOver += image.getRGB(x, y);
 			
-			return gameOver == Utils.M_CONTINUE_VAL;
+			return gameOver == Pixel.M_CONTINUE_VAL;
 		} else {
 			long gameOver = 0;
 			for (int x = Utils.MF_X_DEFEAT; x < Utils.MF_X_DEFEAT + Utils.MF_DEFEAT_WIDTH; x++ )
 				for (int y = Utils.MF_Y_DEFEAT; y < Utils.MF_Y_DEFEAT + Utils.MF_DEFEAT_HEIGHT; y++ )
 					gameOver += image.getRGB(x, y);
 			
-			return gameOver == Utils.MF_DEFEAT_VAL;
+			return gameOver == Pixel.MF_DEFEAT_VAL;
 		}
 	}
 	
@@ -239,7 +230,7 @@ public class Utils {
 			for (int y = Utils.M_Y_NO_MORE_MAPS; y < Utils.M_Y_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; y++ )
 				noMoreMaps += image.getRGB(x, y);
 
-		return noMoreMaps == Utils.M_NO_MORE_MAPS_VAL;
+		return noMoreMaps == Pixel.M_NO_MORE_MAPS_VAL;
 	}
 
 	public static BufferedImage takeScreenshot() throws AWTException {
@@ -264,5 +255,28 @@ public class Utils {
 		}
 		
 		return value;
+	}
+
+	public static boolean isServicePopupShowing(BufferedImage image) {
+		long popup = 0;
+		for (int x = Utils.M_X_SERVICE; x < Utils.M_X_SERVICE + Utils.M_SERVICE_SIZE; x++ )
+			for (int y = Utils.M_Y_SERVICE; y < Utils.M_Y_SERVICE + Utils.M_SERVICE_SIZE; y++ )
+				popup += image.getRGB(x, y);
+
+		return popup == Pixel.M_SERVICE_VAL;
+	}
+
+	public static void skipServicePopup() throws AWTException, InterruptedException {
+		click(960, 700);
+		Thread.sleep(5000);
+	}
+	
+	public static void scrollOut() throws AWTException, InterruptedException {
+		int j = 20;
+		Robot r = new Robot();
+		while (j-- > 0) {
+			r.mouseWheel(1);
+			Thread.sleep(10);
+		}
 	}
 }
