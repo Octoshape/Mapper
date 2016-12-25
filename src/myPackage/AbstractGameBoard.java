@@ -233,8 +233,11 @@ public class AbstractGameBoard extends AbstractBoard {
 		}
 	}
 
-	@Override
 	public Move calculateNextMove(int depth, BoardMove bestMove) {
 		throw new RuntimeException("Don't calculateNextMove on abstract GameBoard!");
+	}
+	
+	public void simulate(BoardMove move, boolean firstTime) {
+		throw new RuntimeException("Don't simulate on abstract GameBoard!");
 	}
 }

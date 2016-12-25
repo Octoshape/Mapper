@@ -6,7 +6,7 @@ import java.util.List;
 import myPackage.Utils.MAP_GEM;
 
 public abstract class AbstractBoard {
-	
+
 	protected AbstractBoard(long[][] vals) {
 		board = new IGem[8][8];
 		initBoard(vals);
@@ -27,7 +27,7 @@ public abstract class AbstractBoard {
 	@Override
 	public String toString() {
 		String result = "";
-	
+
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				result += String.format("%1$" + 8 + "s", this.board[i][j]) + " ";
@@ -36,6 +36,8 @@ public abstract class AbstractBoard {
 		}
 		return result;
 	}
+	
+	protected abstract void simulate(BoardMove nextMove, boolean firstTime);
 
 	protected void collapse() {
 		for (int column = 0; column < 8; column++) {
@@ -58,12 +60,12 @@ public abstract class AbstractBoard {
 	protected GemsMatch findMatchingStones(int x, int y, BoardMove move) {
 		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
 		Coordinates replacement = new Coordinates(-1, -1);
-	
+
 		IGem val = board[x][y];
-		if (val == MAP_GEM.EMPTY || val == MAP_GEM.TREASURE) {
+		if (val == MAP_GEM.EMPTY || val == MAP_GEM.VAULT) {
 			return new GemsMatch(removeStones, replacement);
 		}
-	
+
 		// go left
 		for (int currentX = x; --currentX >= 0 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
 		// go right
@@ -72,23 +74,23 @@ public abstract class AbstractBoard {
 		for (int currentY = y; --currentY >= 0 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
 		// go down
 		for (int currentY = y; ++currentY < 8 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
-	
+
 		if (leftright.size() > 1) {
 			removeStones.addAll(leftright);
 		}
-	
+
 		if (updown.size() > 1) {
 			removeStones.addAll(updown);
 		}
-	
+
 		if (!removeStones.isEmpty()) {
 			removeStones.add(new Coordinates(x, y));
 		} else {
 			return new GemsMatch(removeStones, replacement);
 		}
-	
+
 		// Calculate replacement coordinates.
-	
+
 		if (move != null) {
 			replacement = new Coordinates(x, y);
 			assignExtraTurns(removeStones.size(), move);
@@ -105,13 +107,13 @@ public abstract class AbstractBoard {
 					}
 				}
 			}
-			
+
 			// Air match resolved, x y is not on a branch, we see the whole match.
-			
+
 			if (leftright.size() > 1 && updown.size() > 1) {
 				// cross
 				replacement = new Coordinates(x, y);
-	
+
 			} else {
 				// line
 				int xMean = 0, yMean = 0;
@@ -121,20 +123,20 @@ public abstract class AbstractBoard {
 				}
 				xMean /= removeStones.size();
 				yMean /= removeStones.size();
-	
+
 				replacement = new Coordinates(xMean, yMean);
 			}
 		}
-	
+
 		return new GemsMatch(removeStones, replacement);
 	}
 
 	private GemsMatch searchInsideMatch(int x, int y) {
 		List<Coordinates> removeStones = new ArrayList<>(), leftright = new ArrayList<>(), updown = new ArrayList<>();
 		Coordinates replacement = new Coordinates(-1, -1);
-	
+
 		IGem val = board[x][y];
-	
+
 		// go left
 		for (int currentX = x; --currentX >= 0 && this.board[currentX][y] == val; leftright.add(new Coordinates(currentX, y)));
 		// go right
@@ -143,23 +145,23 @@ public abstract class AbstractBoard {
 		for (int currentY = y; --currentY >= 0 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
 		// go down
 		for (int currentY = y; ++currentY < 8 && this.board[x][currentY] == val; updown.add(new Coordinates(x, currentY)));
-	
+
 		if (leftright.size() > 1) {
 			removeStones.addAll(leftright);
 		}
-	
+
 		if (updown.size() > 1) {
 			removeStones.addAll(updown);
 		}
-	
+
 		removeStones.add(new Coordinates(x, y));
-	
+
 		// Calculate replacement coordinates.
-	
+
 		if (leftright.size() > 1 && updown.size() > 1) {
 			// cross
 			replacement = new Coordinates(x, y);
-	
+
 		} else {
 			// line
 			int xMean = 0, yMean = 0;
@@ -169,10 +171,10 @@ public abstract class AbstractBoard {
 			}
 			xMean /= removeStones.size();
 			yMean /= removeStones.size();
-	
+
 			replacement = new Coordinates(xMean, yMean);
 		}
-	
+
 		return new GemsMatch(removeStones, replacement);
 	}
 
@@ -193,7 +195,7 @@ public abstract class AbstractBoard {
 		default:
 			break;
 		}
-		
+
 		move.biggestMatch = amount;
 	}
 
@@ -203,5 +205,16 @@ public abstract class AbstractBoard {
 		IGem tmp = this.board[row][column];
 		this.board[row][column] = this.board[row2][column2];
 		this.board[row2][column2] = tmp;
+	}
+
+	protected void removeStones(GemsMatch match) {
+		if (match.coords.isEmpty()) {
+			return;
+		}
+
+		// remove all stones.
+		for (Coordinates c : match.coords) {
+			board[c.x][c.y] = MAP_GEM.EMPTY;
+		}
 	}
 }

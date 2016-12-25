@@ -70,7 +70,7 @@ public class TreasureBoard extends AbstractBoard {
 		return bestMove;
 	}
 	
-	private void simulate(BoardMove nextMove, boolean firstTime) {
+	protected void simulate(BoardMove nextMove, boolean firstTime) {
 		boolean foundMatches = false, foundAirMatches = false;
 		GemsMatch match;
 
@@ -104,30 +104,13 @@ public class TreasureBoard extends AbstractBoard {
 		}
 	}
 	
-	private void removeStones(GemsMatch match) {
-		if (match.coords.isEmpty()) {
-			return;
-		}
-	
-		// save the replacement's value.
-		MAP_GEM currVal = (MAP_GEM)board[match.replacementCoord.x][match.replacementCoord.y];
-		
-		// remove all stones.
-		for (Coordinates c : match.coords) {
-			board[c.x][c.y] = MAP_GEM.EMPTY;
-		}
-	
-		// add better replacement.
-		board[match.replacementCoord.x][match.replacementCoord.y] = MAP_GEM.values()[currVal.ordinal() + 1];
-	}
-
 	@Override
 	protected void initBoard(long[][] values) {
 		for (int x = 0; x < values.length; x++) {
 			for (int y = 0; y < values.length; y++) {
 				long value = values[y][x];
 				if (value < -4300000000l)
-					board[x][y] = MAP_GEM.valueOf("TREASURE");
+					board[x][y] = MAP_GEM.valueOf("VAULT");
 				else if (value < -4070000000l)
 					board[x][y] = MAP_GEM.valueOf("SILVER");
 				else if (value < -3800000000l)
@@ -148,8 +131,19 @@ public class TreasureBoard extends AbstractBoard {
 		}
 	}
 	
+	@Override
+	protected void removeStones(GemsMatch match) {
+		// save the replacement's value.
+		MAP_GEM currVal = (MAP_GEM)board[match.replacementCoord.x][match.replacementCoord.y];
+		
+		super.removeStones(match);
+
+		// add better replacement.
+		board[match.replacementCoord.x][match.replacementCoord.y] = MAP_GEM.values()[currVal.ordinal() + 1];
+	}
+
 	protected boolean validMove(BoardMove m)  {
-		return (this.board[m.row][m.column] != MAP_GEM.TREASURE && this.board[m.row2][m.column2] != MAP_GEM.TREASURE);
+		return (this.board[m.row][m.column] != MAP_GEM.VAULT && this.board[m.row2][m.column2] != MAP_GEM.VAULT);
 	}
 
 	protected boolean makeMove(BoardMove m) {

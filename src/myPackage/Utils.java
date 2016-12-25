@@ -63,8 +63,8 @@ public class Utils {
 
 
 	// Enums
-	public static enum MAP_GEM implements IGem { EMPTY, COPPER, SILVER, GOLD, BAG, IRON, GREEN, RED, TREASURE };
-	public static enum GEM implements IGem { RED, BLUE, GREEN, BROWN, YELLOW, PURPLE, SKULL };
+	public static enum MAP_GEM implements IGem { EMPTY, COPPER, SILVER, GOLD, BAG, IRON, GREEN, RED, VAULT };
+	public static enum GEM implements IGem { EMPTY, RED, BLUE, GREEN, BROWN, YELLOW, PURPLE, SKULL };
 	public static enum DIRECTION { UP, RIGHT, DOWN, LEFT }
 
 	public static void startNewGame() throws AWTException, InterruptedException {
