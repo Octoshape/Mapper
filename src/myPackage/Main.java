@@ -7,14 +7,20 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.imageio.ImageIO;
+
+import org.jnativehook.NativeHookException;
 
 public class Main {
 
-	public static void main(String[] args) throws IOException, AWTException, InterruptedException {
+	public static void main(String[] args) throws IOException, AWTException, InterruptedException, NativeHookException {
 //		BufferedImage bI = ImageIO.read(new File("input\\service.png"));
 //		color(bI);
 		
+		Utils.initGlobalKeyListener();
+        Utils.initTrayIcon();
+        
 		int i = 0, skipCounter = 0;
 		PrintStream logger = new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
@@ -27,12 +33,15 @@ public class Main {
 		if (argsList.contains("--mode")) {
 			Utils.MODE = argsList.get(argsList.indexOf("--mode") + 1);
 		}
-
-		Thread.sleep(3000); // Wait for user to tab into game.
-		Utils.startNewGame();
+		
+		Utils.showInfo();
 		BufferedImage previousImage, image = Utils.takeScreenshot();
 
-		while(true) { // Never stop.
+		while(true) {
+			if (Utils.PAUSED) {
+				Thread.sleep(5000);
+				continue;
+			}
 			logger.flush();
 			AbstractBoard board = null;
 			Move bestMove = null;
@@ -83,7 +92,6 @@ public class Main {
 					if (Utils.isMyTurn(image)) {
 						board = new MapFarmGameBoard(vals);
 						if (Utils.SKIP) {
-							skipCounter++;
 							Utils.SKIP = false;
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;

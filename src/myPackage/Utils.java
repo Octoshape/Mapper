@@ -1,12 +1,21 @@
 package myPackage;
 
 import java.awt.AWTException;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.SystemTray;
 import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
 
 import myPackage.CARD;
 import myPackage.CARD.STATUS;
@@ -37,6 +46,11 @@ public class Utils {
 	public static int DEPTH = 1;
 	public static String MODE = "M"; // M & MF
 	public static boolean SKIP;
+	public static boolean PAUSED = true;
+	public static final String MSG_HELP = "Currently: %s\nF1: Show this help\nF2: Toggle Pause  F3: Start doing maps\nF4: Start Farming maps  F5: Terminate";
+	public static final String MSG_RESUMED = "";
+	public static final String MSG_ENABLED_M = "";
+	public static final String MSG_ENABLED_MF = "";
 
 	// MF CONSTANTS
 	public static final int MF_X_MY_TURN = 296;
@@ -277,5 +291,40 @@ public class Utils {
 			r.mouseWheel(1);
 			Thread.sleep(10);
 		}
+	}
+	
+	
+	static TrayIcon trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("images/tray.gif"), "Popup");
+	
+	public static void initTrayIcon() throws AWTException {
+		SystemTray tray = SystemTray.getSystemTray();
+		tray.add(trayIcon);		
+	}
+	
+	public static void initGlobalKeyListener() throws NativeHookException {
+		// Clear previous logging configurations.
+        LogManager.getLogManager().reset();
+        // Get the logger for "org.jnativehook" and set the level to off.
+        Logger.getLogger(GlobalScreen.class.getPackage().getName()).setLevel(Level.OFF);
+       
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeKeyListener(new GlobalKeyListener());
+	}
+	
+	public static void showInfo() {
+        trayIcon.displayMessage("Gems of War Bot", String.format(Utils.MSG_HELP, getCurrentMode()), TrayIcon.MessageType.INFO);
+	}
+
+	public static String getCurrentMode() {
+		if (Utils.PAUSED) {
+			return "Bot paused";
+		}
+		switch (Utils.MODE) {
+		case "M":
+			return "Doing Maps";
+		case "MF":
+			return "Farming Maps";
+		}
+		return "Unknown state";
 	}
 }
