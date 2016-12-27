@@ -96,7 +96,7 @@ public class Main {
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
-						((MapFarmGameBoard)board).updateCards(image);
+						((MapFarmGameBoard)board).checkForCardUpdates();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
 						continue;

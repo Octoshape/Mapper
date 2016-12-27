@@ -35,22 +35,25 @@ public class Utils {
 	public static final int TILE_WIDTH = 118;
 	public static final int SEARCH_WIDTH = 10;
 	public static final int OFFSET = TILE_WIDTH / 2;
-	private static final int X_CAST = 950;
-	private static final int Y_CAST = 920;
 	public static final int X_CARD_POS = 320;
 	public static final int Y_CARD1_POS = 190;
 	public static final int Y_CARD2_POS = 440;
 	public static final int Y_CARD3_POS = 690;
 	public static final int Y_CARD4_POS = 940;
+	public static final int X_CARD_BASE = 1100;
+	public static final int Y_CARD_BASE = 385;
+	public static final int CARD_BASE_SIZE = 100;
+	public static final int X_CAST_BUTTON = 900;
+	public static final int Y_CAST_BUTTON = 900;
+	public static final int X_CAST_BUTTON_SIZE = 100;
+	public static final int Y_CAST_BUTTON_SIZE = 50;
+	public static final long CAST_VALUE = 12312312312l;
 	public static boolean DEBUG = false;
 	public static int DEPTH = 1;
 	public static String MODE = "M"; // M & MF
 	public static boolean SKIP;
 	public static boolean PAUSED = true;
-	public static final String MSG_HELP = "Currently: %s\nF1: Show this help\nF2: Toggle Pause  F3: Start doing maps\nF4: Start Farming maps  F5: Terminate";
-	public static final String MSG_RESUMED = "";
-	public static final String MSG_ENABLED_M = "";
-	public static final String MSG_ENABLED_MF = "";
+	public static final String MSG_HELP = "Currently: %s\nF1: Show this help\nF2: Toggle Pause  F3: Start doing maps\nF4: Start Farming maps  F5: Terminate  F6: Start PVP";
 
 	// MF CONSTANTS
 	public static final int MF_X_MY_TURN = 296;
@@ -109,45 +112,18 @@ public class Utils {
 
 	public static void skipScore() throws AWTException, InterruptedException {
 		Thread.sleep(2000);
-		if (MODE == "M") {
+		if (MODE.equals("M")) {
 			click(M_X_CONTINUE + M_CONTINUE_SIZE / 2, M_Y_CONTINUE + M_CONTINUE_SIZE / 2); // Skip stones
-			Thread.sleep(5000);
+			Thread.sleep(3000);
 		}
 		click(1000, 500); // Click to skip score screen.
 		Thread.sleep(5000);
 	}
 	
 
-	private static void castOnBoard(Cast c) throws AWTException, InterruptedException {
-		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(CAST_DELAY);
-		click(X_CAST, Y_CAST); // Click the cast button.
-		Thread.sleep(CAST_DELAY);
-		clickOnBoard(c.getX(), c.getY()); // Click the cast target.
-	}
-
-	public static void castOnCard(Cast c) throws AWTException, InterruptedException {
-		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(CAST_DELAY);
-		click(X_CAST, Y_CAST); // Click the cast button.
-		Thread.sleep(CAST_DELAY);
-		click(c.getX(), c.getY()); // Click the cast target.
-	}
-
-	public static void cast(Cast c) throws AWTException, InterruptedException {
-		click(c.getCard().getX(), c.getCard().getY()); // Click the card.
-		Thread.sleep(CAST_DELAY);
-		click(X_CAST, Y_CAST); // Click the cast button.
-	}
-
-	private static void makeBoardMove(BoardMove boardMove) throws AWTException {
-		clickOnBoard(boardMove.row, boardMove.column);
-		clickOnBoard(boardMove.row2, boardMove.column2);
-	}
-
 	public static void click(int x, int y) throws AWTException {
 		Robot bot = new Robot();
-		bot.mouseMove(x, y);    
+		bot.mouseMove(x, y);
 		bot.mousePress(InputEvent.BUTTON1_MASK);
 		bot.mouseRelease(InputEvent.BUTTON1_MASK);
 		bot.mouseMove(1, 1);
@@ -156,18 +132,20 @@ public class Utils {
 	public static void makeMove(Move nextMove) throws AWTException, InterruptedException {
 		if (nextMove instanceof BoardMove) {
 			BoardMove boardMove = (BoardMove)nextMove;
-			makeBoardMove(boardMove);
+			clickOnBoard(boardMove.row, boardMove.column);
+			clickOnBoard(boardMove.row2, boardMove.column2);
 		} else {
 			Cast cast = (Cast)nextMove;
+			click(X_CARD_POS, getCardPosY(cast.getCard().getPosition())); // Click the card.
+			Thread.sleep(CAST_DELAY);
+			click(X_CAST_BUTTON, Y_CAST_BUTTON); // Click the cast button.
+			Thread.sleep(CAST_DELAY);
 			switch (cast.getTarget()) {
 			case ALLY:
-				castOnCard(cast);
+				click(cast.getX(), cast.getY());
 				break;
 			case BOARD:
-				castOnBoard(cast);
-				break;
-			case NONE:
-				cast(cast);
+				clickOnBoard(cast.getX(), cast.getY()); // Click the cast target.
 				break;
 			default:
 				break;
@@ -220,7 +198,7 @@ public class Utils {
 	}
 
 	public static boolean isGameOver(BufferedImage image) {
-		if (MODE == "M") {
+		if (MODE.equals("M")) {
 			long gameOver = 0;
 			for (int x = Utils.M_X_CONTINUE; x < Utils.M_X_CONTINUE + Utils.M_CONTINUE_SIZE; x++ )
 				for (int y = Utils.M_Y_CONTINUE; y < Utils.M_Y_CONTINUE + Utils.M_CONTINUE_SIZE; y++ )
@@ -257,17 +235,6 @@ public class Utils {
 		previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
 		image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
 		return !Arrays.equals(rgb, rgbPrevious);
-	}
-
-	public static long isCardReady(CARD c, BufferedImage image) {
-		long value = 0;
-		for (int a = c.getX() - Utils.SEARCH_WIDTH; a <= c.getX() + Utils.SEARCH_WIDTH; a++) {
-			for (int b = c.getY() - Utils.SEARCH_WIDTH; b <= c.getY() + Utils.SEARCH_WIDTH; b++) {
-				value += image.getRGB(a, b);
-			}
-		}
-		
-		return value;
 	}
 
 	public static boolean isServicePopupShowing(BufferedImage image) {
@@ -320,11 +287,55 @@ public class Utils {
 			return "Bot paused";
 		}
 		switch (Utils.MODE) {
-		case "M":
-			return "Doing Maps";
-		case "MF":
-			return "Farming Maps";
+			case "M":
+				return "Doing Maps";
+			case "MF":
+				return "Farming Maps";
+			case "P":
+				return "Doing PVP";
 		}
 		return "Unknown state";
+	}
+
+	public static int getCardPosY(int i) {
+		switch(i) {
+			case 0:
+				return Y_CARD1_POS;
+			case 1:
+				return Y_CARD2_POS;
+			case 2:
+				return Y_CARD3_POS;
+			case 3:
+				return Y_CARD4_POS;
+			default:
+				return -1;
+		}
+	}
+
+	public static Values getBaseAndCastValueForCard(int i) throws AWTException {
+		click(X_CARD_POS, getCardPosY(i));
+		BufferedImage image = takeScreenshot();
+		long baseValue = 0, castValue = 0;
+		for (int x = X_CARD_BASE; x < X_CARD_BASE + CARD_BASE_SIZE; x++)
+			for (int y = Y_CARD_BASE; y < Y_CARD_BASE + CARD_BASE_SIZE; y++)
+				baseValue += image.getRGB(x, y);
+
+		for (int x = X_CAST_BUTTON; x < X_CAST_BUTTON + X_CAST_BUTTON_SIZE; x++)
+			for (int y = Y_CAST_BUTTON; y < Y_CAST_BUTTON + Y_CAST_BUTTON_SIZE; y++)
+				castValue += image.getRGB(x, y);
+		click(0, 0);
+		return new Values(baseValue, castValue);
+	}
+
+	public static long getCardsValue() throws AWTException {
+		BufferedImage image = takeScreenshot();
+		long cardsValue = 0;
+
+		for (int i = 0; i < 4; i++)
+			for (int x = X_CARD_POS - Utils.SEARCH_WIDTH; x <= X_CARD_POS + Utils.SEARCH_WIDTH; x++)
+				for (int y = getCardPosY(i) - Utils.SEARCH_WIDTH; y <= getCardPosY(i) + Utils.SEARCH_WIDTH; y++)
+					cardsValue += image.getRGB(x, y);
+
+		return cardsValue;
 	}
 }

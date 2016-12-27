@@ -1,47 +1,34 @@
 package myPackage;
 
-import myPackage.Utils.GEM;
-
 public enum CARD {
-	DRYAD (-6034306416l, -5230910273l, -6691054740l, Utils.X_CARD_POS, Utils.Y_CARD1_POS, STATUS.INACTIVE),
-	TYRI (-127799919l, -3937038574l, -6342012196l, Utils.X_CARD_POS, Utils.Y_CARD2_POS, STATUS.INACTIVE),
-	SHAMAN (-3980750978l, -4167849998l, -7076923430l, Utils.X_CARD_POS, Utils.Y_CARD3_POS, STATUS.INACTIVE),
-	SPIDER (-3595164031l, -4562135287l, 999999999l, Utils.X_CARD_POS, Utils.Y_CARD4_POS, STATUS.INACTIVE);
+	DRYAD,
+	TYRI,
+	SHAMAN,
+	SPIDER;
 
 	public enum STATUS {ACTIVE, INACTIVE, DEAD};
 	private STATUS status;
-	private int x, y;
-	private long activeValue;
-	private long inactiveValue;
-	private long deadValue;
+	private int position;
+	private long baseValue;
 
-	CARD(long active, long inactive, long dead, int x, int y, STATUS stat) {
-		this.activeValue = active;
-		this.inactiveValue = inactive;
-		this.deadValue = dead;
-		this.x = x;
-		this.y = y;
-		this.status = stat;
+	CARD() {
+		this.status = STATUS.INACTIVE;
 	}
 
-	long getActiveValue() {
-		return activeValue;
+	long getBaseValue() {
+		return baseValue;
 	}
 
-	long getInactiveValue() {
-		return inactiveValue;
+	void setPosition (int value) {
+		this.position = value;
 	}
 
-	long getDeadValue() {
-		return deadValue;
+	int getPosition () {
+		return this.position;
 	}
 
-	int getX () {
-		return this.x;
-	}
-
-	int getY () {
-		return this.y;
+	void setBaseValue (long value) {
+		this.baseValue = value;
 	}
 
 	void set_status(STATUS val) {

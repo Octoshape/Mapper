@@ -1,5 +1,6 @@
 package myPackage;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import myPackage.CARD.STATUS;
@@ -37,7 +38,7 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 	 * 
 	 * If you have defined states, set your beginning state here.
 	 */
-	public MapFarmGameBoard(long[][] vals) {
+	public MapFarmGameBoard(long[][] vals) throws AWTException {
 		super(vals);
 		boardState = STATE.CHARGE;
 		cards = new CARD[] {CARD.DRYAD, CARD.TYRI, CARD.SHAMAN, CARD.SPIDER};
@@ -146,8 +147,8 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 	}
 	
 	@Override
-	public void updateCards(BufferedImage image) {
-		super.updateCards(image);
+	public void updateCards() throws AWTException {
+		super.updateCards();
 		
 		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
 			boardState = STATE.EXECUTE;

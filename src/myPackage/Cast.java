@@ -40,8 +40,8 @@ public class Cast extends Move {
 
 	public Cast (CARD cast, CARD allyTarget) {
 		this.card = cast;
-		this.x = allyTarget.getX();
-		this.y = allyTarget.getY();
+		this.x = Utils.X_CARD_POS;
+		this.y = Utils.getCardPosY(allyTarget.getPosition());
 		this.target = TARGET.ALLY;
 	}
 	

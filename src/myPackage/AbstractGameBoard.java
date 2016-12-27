@@ -1,5 +1,6 @@
 package myPackage;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import myPackage.CARD.STATUS;
@@ -8,8 +9,9 @@ import myPackage.Utils.GEM;
 
 public class AbstractGameBoard extends AbstractBoard {
 
-	public AbstractGameBoard(long[][] vals) {
+	public AbstractGameBoard(long[][] vals) throws AWTException {
 		super(vals);
+		cardsValue = Utils.getCardsValue();
 	}
 
 	public AbstractGameBoard(AbstractGameBoard otherBoard) {
@@ -18,6 +20,7 @@ public class AbstractGameBoard extends AbstractBoard {
 
 	protected int[] counts;
 	protected CARD[] cards;
+	protected long cardsValue;
 
 	/*** BOARD MOVE METHODS ***/
 	
@@ -211,24 +214,51 @@ public class AbstractGameBoard extends AbstractBoard {
 	protected boolean isCardDead(CARD c) {
 		return c.get_status() == STATUS.DEAD;
 	}
+
+	public void initCards() throws AWTException {
+		for (int i = 0; i < 4; i++) {
+			Values vals = Utils.getBaseAndCastValueForCard(i);
+			cards[i].setBaseValue(vals.getBaseValue());
+		}
+	}
 	
-	public void updateCards(BufferedImage image) {
-		for (CARD c : cards) {
-			long value = Utils.isCardReady(c, image);
+	public void updateCards() throws AWTException {
+		for (int i = 0; i < 4; i++) {
+			Values vals = Utils.getBaseAndCastValueForCard(i);
 
-			final long active = Math.abs(value - c.getActiveValue());
-			final long inactive = Math.abs(value - c.getInactiveValue());
-			final long dead = Math.abs(value - c.getDeadValue());
-
-			long min = Math.min(active, Math.min(inactive, dead));
-			
-			if (min == active) {
-				c.set_status(STATUS.ACTIVE);
-			} else if (min == inactive) {
-				c.set_status(STATUS.INACTIVE);
-			} else {
-				c.set_status(STATUS.DEAD);
+			if (cards[i].getBaseValue() != vals.getBaseValue()) {
+				// See if any other card is now here or if it's dead.
+				boolean alive = false;
+				for (int j = 0; j < 4; j++) {
+					if (j == i) continue;
+					if (cards[j].getBaseValue() == vals.getBaseValue()) {
+						// Card j is now at i's position, swap them.
+						CARD temp = cards[i];
+						cards[i] = cards[j];
+						cards[j] = temp;
+						alive = true;
+						break;
+					}
+				}
+				if (!alive) {
+					cards[i].set_status(STATUS.DEAD);
+				}
 			}
+
+			if (!isCardDead(cards[i])) {
+				// Check for cast button
+				if (vals.getCastValue() == Utils.CAST_VALUE) {
+					cards[i].set_status(STATUS.ACTIVE);
+				} else {
+					cards[i].set_status(STATUS.INACTIVE);
+				}
+			}
+		}
+	}
+
+	public void checkForCardUpdates() throws AWTException {
+		if (cardsValue != Utils.getCardsValue()) {
+			updateCards();
 		}
 	}
 
