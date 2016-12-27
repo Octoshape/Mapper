@@ -158,8 +158,8 @@ public class PVPBot extends AbstractGameBoard {
 	}
 	
 	@Override
-	public void updateCardsAndStatus(BufferedImage image) {
-		super.updateCardsAndStatus(image);
+	public void updateCards(BufferedImage image) {
+		super.updateCards(image);
 		
 		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
 			boardState = STATE.EXECUTE;

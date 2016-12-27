@@ -212,7 +212,7 @@ public class AbstractGameBoard extends AbstractBoard {
 		return c.get_status() == STATUS.DEAD;
 	}
 	
-	public void updateCardsAndStatus(BufferedImage image) {
+	public void updateCards(BufferedImage image) {
 		for (CARD c : cards) {
 			long value = Utils.isCardReady(c, image);
 
