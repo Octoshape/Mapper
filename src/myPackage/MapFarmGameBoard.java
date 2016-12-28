@@ -1,21 +1,16 @@
 package myPackage;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 import myPackage.CARD.STATUS;
 import myPackage.Utils.GEM;
 
 public class MapFarmGameBoard extends AbstractGameBoard {
 	
-	/** 
-	 * Define the order of your cards, use these constants to access the cards Array.
-	 * e.g. cards[DRYAD] in the MapFarmGameBoard.
-	 */
-	private static final int DRYAD = 0;
-	private static final int TYRI = 1;
-	private static final int SHAMAN = 2;
-	private static final int SPIDER = 3;
+	private static Integer DRYAD = 0;
+	private static Integer TYRI = 1;
+	private static Integer SHAMAN = 2;
+	private static Integer SPIDER = 3;
 	private static boolean castOnTyri = false;
 	
 	/**
@@ -40,8 +35,10 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 	 */
 	public MapFarmGameBoard(long[][] vals) throws AWTException {
 		super(vals);
-		boardState = STATE.CHARGE;
-		cards = new CARD[] {CARD.DRYAD, CARD.TYRI, CARD.SHAMAN, CARD.SPIDER};
+		if (!Utils.hasInitialized) {
+			boardState = STATE.CHARGE;
+			cards = new CARD[] {new CARD("DRYAD", DRYAD), new CARD("TYRI", TYRI), new CARD("SHAMAN", SHAMAN), new CARD("SPIDER", SPIDER)};
+		}
 	}
 	
 	/**
@@ -147,7 +144,7 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 	}
 	
 	@Override
-	public void updateCards() throws AWTException {
+	public void updateCards() throws AWTException, InterruptedException {
 		super.updateCards();
 		
 		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
@@ -157,5 +154,43 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 		} else {
 			boardState = STATE.FINISH;
 		}
+	}
+	
+	@Override
+	public void cleanUp() {
+		super.cleanUp();
+		DRYAD = 0;
+		TYRI = 1;
+		SHAMAN = 2;
+		SPIDER = 3;
+		castOnTyri = false;
+	}
+	
+	@Override
+	public void updateConstants () {
+		for (int i = 0; i < 4; i++) {
+			switch(cards[i].getName()) {
+			case "DRYAD":
+				DRYAD = i;
+				break;
+			case "TYRI":
+				TYRI = i;
+				break;
+			case "SHAMAN":
+				SHAMAN = i;
+				break;
+			case "SPIDER":
+				SPIDER = i;
+				break;
+			}
+		}
+	}
+	
+	public void debug() {
+		System.out.println("Card order:");
+		System.out.println("DRYAD is at " + DRYAD + " and is " + cards[DRYAD].get_status());
+		System.out.println("TYRI is at " + TYRI + " and is " + cards[TYRI].get_status());
+		System.out.println("SHAMAN is at " + SHAMAN + " and is " + cards[SHAMAN].get_status());
+		System.out.println("SPIDER is at " + SPIDER + " and is " + cards[SPIDER].get_status());
 	}
 }

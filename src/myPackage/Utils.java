@@ -1,7 +1,6 @@
 package myPackage;
 
 import java.awt.AWTException;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.SystemTray;
@@ -9,15 +8,18 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
+
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
-import myPackage.CARD;
 import myPackage.CARD.STATUS;
 
 
@@ -31,7 +33,7 @@ public class Utils {
 	public static final int Y_START = 80;
 	public static final int Y_END = 1028;
 	public static final int FIELD_WIDTH = X_END - X_START;
-	public static final int FIELD_HEIGTH = Y_END - Y_START;
+	public static final int FIELD_HEIGHT = Y_END - Y_START;
 	public static final int TILE_WIDTH = 118;
 	public static final int SEARCH_WIDTH = 10;
 	public static final int OFFSET = TILE_WIDTH / 2;
@@ -46,8 +48,11 @@ public class Utils {
 	public static final int X_CAST_BUTTON = 900;
 	public static final int Y_CAST_BUTTON = 900;
 	public static final int X_CAST_BUTTON_SIZE = 100;
+	public static final int EXTENDED_X_START = 155;
+	public static final int EXTENDED_Y_START = 110;
+	public static final int EXTENDED_WIDTH = 1600;
+	public static final int EXTENDED_HEIGHT = 940;
 	public static final int Y_CAST_BUTTON_SIZE = 50;
-	public static final long CAST_VALUE = 12312312312l;
 	public static boolean DEBUG = false;
 	public static int DEPTH = 1;
 	public static String MODE = "M"; // M & MF
@@ -66,6 +71,7 @@ public class Utils {
 	public static final int MF_DEFEAT_WIDTH = 440;
 	public static final int MF_DEFEAT_HEIGHT = 80;
 
+
 	// M CONSTANTS
 	public static int M_X_NO_MORE_MAPS = 1005;
 	public static int M_Y_NO_MORE_MAPS = 335;
@@ -77,6 +83,7 @@ public class Utils {
 	public static int M_X_SERVICE = 890;
 	public static int M_Y_SERVICE = 330;
 	public static int M_SERVICE_SIZE = 60;
+	public static boolean hasInitialized = false;
 
 
 	// Enums
@@ -100,6 +107,7 @@ public class Utils {
 			click(1700, 730); // Click Fight.
 			Thread.sleep(1000);
 			click(1000, 500); // Click to start fight.
+			Thread.sleep(8000);
 		}
 	}
 	
@@ -231,9 +239,19 @@ public class Utils {
 	}
 
 	public static boolean hasBoardMoved(BufferedImage previousImage, BufferedImage image) {
-		int[] rgbPrevious = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH], rgb = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGTH];
-		previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
-		image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGTH - Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
+		int[] rgbPrevious = null, rgb = null;
+		if (Utils.hasInitialized) {
+			rgbPrevious = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGHT];
+			rgb = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGHT];
+			previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGHT - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
+			image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGHT - Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
+		} else {
+			rgbPrevious = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+			rgb = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+			previousImage.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgbPrevious, 0, Utils.EXTENDED_WIDTH);
+			image.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgb, 0, Utils.EXTENDED_WIDTH);
+		}
+			
 		return !Arrays.equals(rgb, rgbPrevious);
 	}
 
@@ -312,8 +330,9 @@ public class Utils {
 		}
 	}
 
-	public static Values getBaseAndCastValueForCard(int i) throws AWTException {
+	public static Values getBaseAndCastValueForCard(int i) throws AWTException, InterruptedException {
 		click(X_CARD_POS, getCardPosY(i));
+		Thread.sleep(DELAY);
 		BufferedImage image = takeScreenshot();
 		long baseValue = 0, castValue = 0;
 		for (int x = X_CARD_BASE; x < X_CARD_BASE + CARD_BASE_SIZE; x++)
@@ -324,6 +343,13 @@ public class Utils {
 			for (int y = Y_CAST_BUTTON; y < Y_CAST_BUTTON + Y_CAST_BUTTON_SIZE; y++)
 				castValue += image.getRGB(x, y);
 		click(0, 0);
+		try {
+			ImageIO.write(image, "png", new File("baseValueRead" + i + ".png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Thread.sleep(DELAY);
 		return new Values(baseValue, castValue);
 	}
 

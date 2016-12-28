@@ -15,14 +15,14 @@ import org.jnativehook.NativeHookException;
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException, NativeHookException {
-//		BufferedImage bI = ImageIO.read(new File("input\\service.png"));
+//		BufferedImage bI = ImageIO.read(new File("input\\cast.png"));
 //		color(bI);
 		
 		Utils.initGlobalKeyListener();
         Utils.initTrayIcon();
         
 		int i = 0, skipCounter = 0;
-		PrintStream logger = new PrintStream(new File ("log.txt"));
+		PrintStream logger = System.out;//new PrintStream(new File ("log.txt"));
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--debug")) {
 			Utils.DEBUG = true;	
@@ -90,13 +90,18 @@ public class Main {
 					}
 				} else if (Utils.MODE.equals("MF")) {
 					if (Utils.isMyTurn(image)) {
+//						Thread.sleep(3000);
 						board = new MapFarmGameBoard(vals);
 						if (Utils.SKIP) {
 							Utils.SKIP = false;
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
+						((MapFarmGameBoard)board).initCards();
+//						Thread.sleep(3000);
 						((MapFarmGameBoard)board).checkForCardUpdates();
+//						Thread.sleep(3000);
+						((MapFarmGameBoard)board).debug();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
 						continue;
@@ -122,8 +127,8 @@ public class Main {
 
 	private static void color(BufferedImage bI) throws IOException {
 		long gameOver = 0;
-		for (int x = Utils.M_X_SERVICE; x < Utils.M_X_SERVICE + Utils.M_SERVICE_SIZE; x++ )
-			for (int y = Utils.M_Y_SERVICE; y < Utils.M_Y_SERVICE + Utils.M_SERVICE_SIZE; y++ )
+		for (int x = Utils.X_CAST_BUTTON; x < Utils.X_CAST_BUTTON + Utils.X_CAST_BUTTON_SIZE; x++ )
+			for (int y = Utils.Y_CAST_BUTTON; y < Utils.Y_CAST_BUTTON + Utils.Y_CAST_BUTTON_SIZE; y++ )
 				gameOver += bI.getRGB(x, y);
 
 		System.out.println(gameOver);

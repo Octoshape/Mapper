@@ -23,10 +23,10 @@ public class GlobalKeyListener implements NativeKeyListener {
 				case NativeKeyEvent.VC_F3:
 				case NativeKeyEvent.VC_F4:
 				case NativeKeyEvent.VC_F6:
-					Utils.PAUSED = false;
 					Utils.MODE = modeForKeyCode(e.getKeyCode());
 					Utils.showInfo();
 					Utils.startNewGame();
+					Utils.PAUSED = false;
 					break;
 				case NativeKeyEvent.VC_F5:
 					GlobalScreen.unregisterNativeHook();

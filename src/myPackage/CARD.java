@@ -1,18 +1,20 @@
 package myPackage;
 
-public enum CARD {
-	DRYAD,
-	TYRI,
-	SHAMAN,
-	SPIDER;
-
+public class CARD {
 	public enum STATUS {ACTIVE, INACTIVE, DEAD};
 	private STATUS status;
-	private int position;
+	private Integer position;
 	private long baseValue;
+	private String name;
 
-	CARD() {
+	CARD(String name, Integer position) {
 		this.status = STATUS.INACTIVE;
+		this.name = name;
+		this.position = position;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	long getBaseValue() {
