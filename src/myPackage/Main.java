@@ -2,31 +2,25 @@ package myPackage;
 import java.awt.image.BufferedImage;
 
 import java.awt.AWTException;
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
 import org.jnativehook.NativeHookException;
+
+import myPackage.Sleep.THE;
 
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException, NativeHookException {
-//		BufferedImage bI = ImageIO.read(new File("input\\cast.png"));
-//		color(bI);
+//		BufferedImage bI = ImageIO.read(new File("input\\new.png"));
+//		color(bI, 801, 676, 1079, 731);
 		
 		Utils.initGlobalKeyListener();
         Utils.initTrayIcon();
         
-		int i = 0, skipCounter = 0;
-		PrintStream logger = System.out;//new PrintStream(new File ("log.txt"));
+		int i = 0, notMyTurnCounter = 0;
 		List<String> argsList= Arrays.asList(args);
-		if (argsList.contains("--debug")) {
-			Utils.DEBUG = true;	
-		}
 		if (argsList.contains("--depth")) {
 			Utils.DEPTH = Integer.parseInt(argsList.get(argsList.indexOf("--depth") + 1));
 		}
@@ -35,27 +29,20 @@ public class Main {
 		}
 		
 		Utils.showInfo();
-		BufferedImage previousImage, image = Utils.takeScreenshot();
+		BufferedImage previousImage, image;
 
 		while(true) {
 			if (Utils.PAUSED) {
-				Thread.sleep(5000);
+				Thread.sleep(500);
 				continue;
 			}
-			logger.flush();
+			image = Utils.takeScreenshot();
 			AbstractBoard board = null;
 			Move bestMove = null;
-			if (skipCounter > 20) {
-				Utils.click(500, 500); // Skip daily login bonus screen. (hopefully)
-				Thread.sleep(2000);
-				Utils.MODE = "M";
-				Utils.startNewGame();
-				skipCounter = 0;
-			}
 			try {
 				do {
 					previousImage = image;
-					Thread.sleep(Utils.DELAY);
+					Thread.sleep(2 * Utils.DELAY);
 					image = Utils.takeScreenshot();
 					if (Utils.isGameOver(image)) {
 						Utils.skipScore();
@@ -63,6 +50,7 @@ public class Main {
 							Utils.MODE = "M";
 						}
 						Utils.startNewGame();
+						Utils.hasInitialized = false;
 					} else if (Utils.isServicePopupShowing(image)) {
 						Utils.skipServicePopup();
 						Utils.startNewGame();
@@ -72,13 +60,11 @@ public class Main {
 						Utils.startNewGame();
 					}
 				} while (Utils.hasBoardMoved(previousImage, image));
-
 				long[][] vals = Utils.extractRGB(image);
 
 				if (Utils.MODE.equals("M")) {
 					board = new TreasureBoard(vals);
 					if (Utils.SKIP) {
-						skipCounter++;
 						Utils.SKIP = false;
 						continue;
 					}
@@ -90,7 +76,6 @@ public class Main {
 					}
 				} else if (Utils.MODE.equals("MF")) {
 					if (Utils.isMyTurn(image)) {
-//						Thread.sleep(3000);
 						board = new MapFarmGameBoard(vals);
 						if (Utils.SKIP) {
 							Utils.SKIP = false;
@@ -98,39 +83,51 @@ public class Main {
 							continue;
 						}
 						((MapFarmGameBoard)board).initCards();
-//						Thread.sleep(3000);
 						((MapFarmGameBoard)board).checkForCardUpdates();
-//						Thread.sleep(3000);
 						((MapFarmGameBoard)board).debug();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
 						continue;
 					}
+				} else if (Utils.MODE.equals("P")) {
+					if (Utils.isMyTurn(image)) {
+						notMyTurnCounter = 0;
+						Sleep.until(THE.CARDS_ARE_STEADY);
+						board = new PVPBot(vals);
+						if (Utils.SKIP) {
+							Utils.SKIP = false;
+							System.out.println("Skipped \"frame\", found bad RGB values.");
+							continue;
+						}
+						((PVPBot)board).initCards();
+						((PVPBot)board).checkForCardUpdates();
+						bestMove = board.calculateNextMove(0, null);
+					} else {
+						notMyTurnCounter++;
+						if (notMyTurnCounter > 20) {
+							notMyTurnCounter = 0;
+							Utils.skipScore();
+							Utils.startNewGame();
+							Utils.hasInitialized = false;
+						}
+						continue;
+					}
 				}
-
-				if (Utils.DEBUG) {
-					ImageIO.write(image, "png", new File("images\\log" + i++ + ".png"));
-					logger.println("At board " + (i - 1) + ":");
-					logger.println("Making move: " + bestMove);
-					logger.println();
-				}
-				skipCounter = 0;
 				Utils.makeMove(bestMove);
 			} catch (Exception e) {
-				logger.println("Exception " + e.getMessage() + " thrown in Main with:\n");
-				logger.println("Board state: " + board + "\n");
-				logger.println("Calculated move: " + bestMove + "\n");
-				logger.println("Restarting bot.\n\n");
+				e.printStackTrace();
 			}
 		}
 	}
 
-	private static void color(BufferedImage bI) throws IOException {
-		long gameOver = 0;
-		for (int x = Utils.X_CAST_BUTTON; x < Utils.X_CAST_BUTTON + Utils.X_CAST_BUTTON_SIZE; x++ )
-			for (int y = Utils.Y_CAST_BUTTON; y < Utils.Y_CAST_BUTTON + Utils.Y_CAST_BUTTON_SIZE; y++ )
-				gameOver += bI.getRGB(x, y);
-
-		System.out.println(gameOver);
+	private static void color(BufferedImage image, int xLow, int yLow, int xHigh, int yHigh) throws InterruptedException, AWTException {
+		Thread.sleep(500);
+		long readValue = 0;
+		for (int x = xLow; x < xHigh; x++) {
+			for (int y = yLow; y < yHigh; y++) {
+				readValue += image.getRGB(x, y);
+			}
+		}
+		System.out.println(readValue);
 	}
-}	
+}

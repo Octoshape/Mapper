@@ -1,9 +1,6 @@
 package myPackage;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-
-import myPackage.CARD.STATUS;
 import myPackage.Utils.GEM;
 
 public class PVPBot extends AbstractGameBoard {
@@ -12,17 +9,14 @@ public class PVPBot extends AbstractGameBoard {
 	 * Define the order of your cards, use these constants to access the cards Array.
 	 * e.g. cards[DRYAD] in the MapFarmGameBoard.
 	 */
-	private static final int DRYAD = 0;
-	private static final int TYRI = 1;
-	private static final int SHAMAN = 2;
-	private static final int SPIDER = 3;
-	private static boolean castOnTyri = false;
+	private static int CORONET = 0;
+	private static int FLAME = 1;
+	private static int KHORVASH = 2;
+	private static int GOBLIN = 3;
 	
-	/**
-	 * If you need to, define states for your GameBoard using this enum. 
-	 */
-	private enum STATE {CHARGE, EXECUTE, FINISH};
-	private STATE boardState;
+	private enum STATE {EARLY, LATE};
+	private static int turns = 0;
+	private static STATE boardState;
 	
 	/**
 	 * This constructor is used to copy your Board to analyze moves. 
@@ -40,8 +34,11 @@ public class PVPBot extends AbstractGameBoard {
 	 */
 	public PVPBot(long[][] vals) throws AWTException {
 		super(vals);
-		boardState = STATE.CHARGE;
-		cards = new CARD[] {new CARD("DRYAD", DRYAD), new CARD("TYRI", TYRI), new CARD("SHAMAN", SHAMAN), new CARD("SPIDER", SPIDER)};
+		if (!Utils.hasInitialized) {
+			cards = new CARD[] {new CARD("CORONET", CORONET), new CARD("FLAME", FLAME), new CARD("KHORVASH", KHORVASH), new CARD("GOBLIN", GOBLIN)};
+			turns = 0;
+			boardState = STATE.EARLY;
+		}
 	}
 	
 	/**
@@ -59,115 +56,66 @@ public class PVPBot extends AbstractGameBoard {
 	 */
 	@Override
 	public Move calculateNextMove (int not, BoardMove used) {
-		Move finalMove = null;
-		finalMove = takeFoursOrFives();
-		
-		if (finalMove == null) {
-			finalMove = tryToTakeColors(GEM.SKULL);
+		turns++;
+		if (isCardActive(cards[GOBLIN])) {
+			return cards[GOBLIN].castOnTopEnemy();
 		}
-		
-		if (finalMove == null) {
-			finalMove = takeThrees();
-		}
-		
-		return finalMove;
-		
-//		switch (boardState) {
-//		case CHARGE:
-//			finalMove = takeFoursOrFives();
-//			if (finalMove != null) break;
-//			finalMove = tryToTakeColors(GEM.GREEN, GEM.PURPLE);
-//			if (finalMove != null) break;
-//			if (isCardActive(cards[SHAMAN])) {
-//				finalMove = cards[SHAMAN].castWithoutTarget();
-//				break;
-//			}
-//			if (isCardActive(cards[DRYAD])) {
-//				finalMove = castDryad();
-//				break;
-//			}
-//			finalMove = tryToTakeColors(GEM.BROWN, GEM.BLUE, GEM.YELLOW, GEM.RED, GEM.SKULL);
-//			break;
-//		case EXECUTE:
-//			getStoneCount();
-//			finalMove = castTyriOnConditions(finalMove, GEM.GREEN, 8);
-//			if (finalMove != null) break;
-//			finalMove = castTyriOnConditions(finalMove, GEM.PURPLE, 8);
-//			if (finalMove != null) break;
-//			if (cards[SHAMAN].get_status() == CARD.STATUS.ACTIVE) {
-//				finalMove = cards[SHAMAN].castWithoutTarget();
-//				break;
-//			}
-//			if (cards[DRYAD].get_status() == CARD.STATUS.ACTIVE) {
-//				finalMove = castDryad();
-//				break;
-//			}
-//			if (cards[SPIDER].get_status() == CARD.STATUS.ACTIVE) {
-//				Coordinates c = findBestSpiderTarget();
-//				finalMove = cards[SPIDER].castOnBoard(c.x, c.y);
-//				break;
-//			}
-//			finalMove = takeFoursOrFives();
-//			if (finalMove != null) break;
-//			finalMove = castTyriOnConditions(finalMove, GEM.GREEN, 5);
-//			if (finalMove != null) break;
-//			finalMove = castTyriOnConditions(finalMove, GEM.PURPLE, 5);
-//			if (finalMove != null) break;
-//			finalMove = tryToTakeColors(GEM.BROWN, GEM.BLUE, GEM.YELLOW, GEM.RED, GEM.SKULL);
-//			break;
-//		case FINISH:
-//			finalMove = takeThrees();
-//			break;
-//		default:
-//			break;
-//		}
-//
-//		return finalMove;
-	}
-
-	private Move castDryad() {
-		Move result;
-		if (castOnTyri) {
-			result = cards[DRYAD].castOnAlly(cards[TYRI]);
-		} else {
-			result = cards[DRYAD].castOnAlly(cards[DRYAD]);
-		}
-		castOnTyri = !castOnTyri;
-		return result;
-	}
-
-	private Cast castTyriOnConditions(Move finalMove, GEM color, int amount) {
-		Cast tyriCast = null;
-		if (counts[color.ordinal()] >= amount) {
-			Coordinates c = getGemOfColor(color);
-			tyriCast = cards[TYRI].castOnBoard(c.x, c.y);
-		}
-		return tyriCast;
-	}
-	
-	private Coordinates findBestSpiderTarget() {
-		int max = 0;
-		GEM color = null;
-		for (int i = 0; i < counts.length; i++) {
-			GEM currentColor = GEM.values()[i];
-			if (counts[i] > max && currentColor != GEM.GREEN && currentColor != GEM.PURPLE && currentColor != GEM.SKULL) {
-				max = counts[i];
-				color = GEM.values()[i];
+		Move finalMove = takeFoursOrFives();
+		if (finalMove != null) return finalMove;
+		if (isCardActive(cards[FLAME])) {
+			Coordinates c = findBestFlameTarget();
+			if (c != null) {
+				return cards[FLAME].castOnBoard(c.x, c.y);
 			}
 		}
-		return getGemOfColor(color);
+		if (isCardActive(cards[KHORVASH])) {
+			return cards[KHORVASH].castWithoutTarget();
+		}
+		if (isCardActive(cards[CORONET])) {
+			return cards[CORONET].castWithoutTarget();
+		}
+		
+		if (boardState == STATE.EARLY) {
+			return tryToTakeColors(GEM.BROWN, GEM.RED, GEM.BLUE, GEM.YELLOW, GEM.GREEN, GEM.SKULL, GEM.PURPLE);
+		} else {
+			return tryToTakeColors(GEM.SKULL, GEM.BROWN, GEM.RED, GEM.BLUE, GEM.YELLOW, GEM.GREEN, GEM.PURPLE);
+		}
+	}
+
+	private Coordinates findBestFlameTarget() {
+		int best = 0;
+		Coordinates bestCoordinates = new Coordinates(3, 3);
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				int amount = 0;
+				for (int m = -1; m < 2; m++) {
+					for (int n = -1; n < 2; n++) {
+						if (i + m > 0 && i + m < 8 && j + n > 0 && j + n < 8) {
+							GEM current = (GEM) board[i + m][j + n];
+							if (current == GEM.SKULL) {
+								amount++;
+							}
+							if (current == GEM.RED) {
+								amount += 3;
+							}
+						}
+					}
+				}
+				
+				if (amount > best) {
+					best = amount;
+					bestCoordinates = new Coordinates(i, j);
+				}
+			}
+		}
+		return bestCoordinates;
 	}
 	
 	@Override
 	public void updateCards() throws AWTException, InterruptedException {
 		super.updateCards();
-		
-		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
-			boardState = STATE.EXECUTE;
-		} else if (cards[TYRI].get_status() == STATUS.INACTIVE) {
-			boardState = STATE.CHARGE;
-		} else {
-			boardState = STATE.FINISH;
+		if (turns > 6) {
+			boardState = STATE.LATE;
 		}
 	}
 }

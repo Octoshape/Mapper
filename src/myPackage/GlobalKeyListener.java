@@ -4,7 +4,6 @@ import java.awt.AWTException;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
-import org.jnativehook.NativeInputEvent;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
@@ -26,6 +25,7 @@ public class GlobalKeyListener implements NativeKeyListener {
 					Utils.MODE = modeForKeyCode(e.getKeyCode());
 					Utils.showInfo();
 					Utils.startNewGame();
+					Utils.hasInitialized = false;
 					Utils.PAUSED = false;
 					break;
 				case NativeKeyEvent.VC_F5:

@@ -1,31 +1,33 @@
 package myPackage;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import myPackage.CARD.STATUS;
 import myPackage.Utils.GEM;
 
 public class MapFarmGameBoard extends AbstractGameBoard {
-	
+
 	private static Integer DRYAD = 0;
 	private static Integer TYRI = 1;
 	private static Integer SHAMAN = 2;
 	private static Integer SPIDER = 3;
 	private static boolean castOnTyri = false;
-	
+
 	/**
 	 * If you need to, define states for your GameBoard using this enum. 
 	 */
 	private enum STATE {CHARGE, EXECUTE, FINISH};
-	private STATE boardState;
-	
+	private static STATE boardState;
+
 	/**
 	 * This constructor is used to copy your Board to analyze moves. 
 	 */
 	public MapFarmGameBoard(AbstractGameBoard otherBoard) {
 		super(otherBoard);
 	}
-	
+
 	/**
 	 * Use this constructor to initialize your Board. 
 	 * 
@@ -40,7 +42,7 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 			cards = new CARD[] {new CARD("DRYAD", DRYAD), new CARD("TYRI", TYRI), new CARD("SHAMAN", SHAMAN), new CARD("SPIDER", SPIDER)};
 		}
 	}
-	
+
 	/**
 	 * This method defines the AI logic. 
 	 * 
@@ -129,7 +131,7 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 		}
 		return tyriCast;
 	}
-	
+
 	private Coordinates findBestSpiderTarget() {
 		int max = 0;
 		GEM color = null;
@@ -142,11 +144,11 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 		}
 		return getGemOfColor(color);
 	}
-	
+
 	@Override
 	public void updateCards() throws AWTException, InterruptedException {
 		super.updateCards();
-		
+
 		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
 			boardState = STATE.EXECUTE;
 		} else if (cards[TYRI].get_status() == STATUS.INACTIVE) {
@@ -155,17 +157,7 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 			boardState = STATE.FINISH;
 		}
 	}
-	
-	@Override
-	public void cleanUp() {
-		super.cleanUp();
-		DRYAD = 0;
-		TYRI = 1;
-		SHAMAN = 2;
-		SPIDER = 3;
-		castOnTyri = false;
-	}
-	
+
 	@Override
 	public void updateConstants () {
 		for (int i = 0; i < 4; i++) {
@@ -185,12 +177,11 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 			}
 		}
 	}
-	
+
 	public void debug() {
-		System.out.println("Card order:");
-		System.out.println("DRYAD is at " + DRYAD + " and is " + cards[DRYAD].get_status());
-		System.out.println("TYRI is at " + TYRI + " and is " + cards[TYRI].get_status());
-		System.out.println("SHAMAN is at " + SHAMAN + " and is " + cards[SHAMAN].get_status());
-		System.out.println("SPIDER is at " + SPIDER + " and is " + cards[SPIDER].get_status());
+		Utils.displayMessage("DRYAD" + DRYAD + " " + cards[DRYAD].get_status()  
+				+ "\nTYRI" + TYRI + " " + cards[TYRI].get_status()
+				+ "\nSHAMAN" + SHAMAN + " " + cards[SHAMAN].get_status()
+				+ "\nSPIDER" + SPIDER + " " + cards[SPIDER].get_status());
 	}
 }

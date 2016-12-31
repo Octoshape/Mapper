@@ -7,6 +7,13 @@ public class CARD {
 	private long baseValue;
 	private String name;
 
+	CARD (CARD copy) {
+		this.status = STATUS.valueOf(copy.status.toString());
+		this.position = copy.position;
+		this.baseValue = copy.baseValue;
+		this.name = copy.name;
+	}
+	
 	CARD(String name, Integer position) {
 		this.status = STATUS.INACTIVE;
 		this.name = name;

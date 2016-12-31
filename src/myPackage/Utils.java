@@ -21,6 +21,7 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
 import myPackage.CARD.STATUS;
+import myPackage.Sleep.THE;
 
 
 public class Utils {
@@ -38,13 +39,14 @@ public class Utils {
 	public static final int SEARCH_WIDTH = 10;
 	public static final int OFFSET = TILE_WIDTH / 2;
 	public static final int X_CARD_POS = 320;
+	public static final int X_CARD_ENEMY_POS = 1600;
 	public static final int Y_CARD1_POS = 190;
 	public static final int Y_CARD2_POS = 440;
 	public static final int Y_CARD3_POS = 690;
 	public static final int Y_CARD4_POS = 940;
-	public static final int X_CARD_BASE = 1100;
-	public static final int Y_CARD_BASE = 385;
-	public static final int CARD_BASE_SIZE = 100;
+	public static final int X_CARD_BASE = 1000;
+	public static final int Y_CARD_BASE = 280;
+	public static final int CARD_BASE_SIZE = 50;
 	public static final int X_CAST_BUTTON = 900;
 	public static final int Y_CAST_BUTTON = 900;
 	public static final int X_CAST_BUTTON_SIZE = 100;
@@ -53,7 +55,6 @@ public class Utils {
 	public static final int EXTENDED_WIDTH = 1600;
 	public static final int EXTENDED_HEIGHT = 940;
 	public static final int Y_CAST_BUTTON_SIZE = 50;
-	public static boolean DEBUG = false;
 	public static int DEPTH = 1;
 	public static String MODE = "M"; // M & MF
 	public static boolean SKIP;
@@ -98,16 +99,24 @@ public class Utils {
 			click(570, 780); // Click the Treasure Hunt button.
 			Thread.sleep(500);
 			click(970, 860); // Click the "Use a Map" button.
-			Thread.sleep(7000);
 		} else if (MODE.equals("MF")) {
 			click(870, 320); // Click Broken Spire from Zul'Kari.
 			Thread.sleep(1500);
 			click(1130, 350); // Click Challenges.
 			Thread.sleep(2000);
 			click(1700, 730); // Click Fight.
-			Thread.sleep(1000);
+			Sleep.until(THE.BATTLE_IS_READY);
 			click(1000, 500); // Click to start fight.
-			Thread.sleep(8000);
+			Sleep.until(THE.BOARD_IS_READY);
+		} else if (MODE.equals("P")) {
+			if (!Utils.hasInitialized) {
+				click(390, 980); // Click PVP.
+			}
+			Sleep.until(THE.PVP_MENU);
+			click(1450, 250); // Click hard enemy.
+			Sleep.until(THE.BATTLE_IS_READY);
+			click(1000, 500); // Click to start fight.
+			Sleep.until(THE.BOARD_IS_READY);
 		}
 	}
 	
@@ -115,17 +124,21 @@ public class Utils {
 		click(1280, 350);
 		Thread.sleep(500);
 		click(1360, 200);
-		Thread.sleep(2000);
+		Sleep.until(THE.MAIN_MENU);
 	}
 
 	public static void skipScore() throws AWTException, InterruptedException {
+		if (MODE.equals("P")) {
+			Sleep.until(THE.PVP_MENU);
+			return;
+		}
 		Thread.sleep(2000);
 		if (MODE.equals("M")) {
 			click(M_X_CONTINUE + M_CONTINUE_SIZE / 2, M_Y_CONTINUE + M_CONTINUE_SIZE / 2); // Skip stones
-			Thread.sleep(3000);
+			Thread.sleep(2000);
 		}
 		click(1000, 500); // Click to skip score screen.
-		Thread.sleep(5000);
+		Sleep.until(THE.MAIN_MENU);
 	}
 	
 
@@ -155,10 +168,17 @@ public class Utils {
 			case BOARD:
 				clickOnBoard(cast.getX(), cast.getY()); // Click the cast target.
 				break;
+			case ENEMY:
+				clickTopEnemy();
 			default:
 				break;
 			}
-			cast.getCard().set_status(STATUS.INACTIVE);
+		}
+	}
+
+	private static void clickTopEnemy() throws AWTException {
+		for (int i = 0; i < 4; i++) {
+			click(X_CARD_ENEMY_POS, getCardPosY(i));
 		}
 	}
 
@@ -219,7 +239,7 @@ public class Utils {
 				for (int y = Utils.MF_Y_DEFEAT; y < Utils.MF_Y_DEFEAT + Utils.MF_DEFEAT_HEIGHT; y++ )
 					gameOver += image.getRGB(x, y);
 			
-			return gameOver == Pixel.MF_DEFEAT_VAL;
+			return gameOver == Pixel.MF_DEFEAT_VAL || gameOver == Pixel.MF_VICTORY_VAL;
 		}
 	}
 	
@@ -240,17 +260,17 @@ public class Utils {
 
 	public static boolean hasBoardMoved(BufferedImage previousImage, BufferedImage image) {
 		int[] rgbPrevious = null, rgb = null;
-		if (Utils.hasInitialized) {
+		if (true) {
 			rgbPrevious = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGHT];
 			rgb = new int[Utils.FIELD_WIDTH * Utils.FIELD_HEIGHT];
-			previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGHT - Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
-			image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - Utils.OFFSET, Utils.FIELD_HEIGHT - Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
-		} else {
-			rgbPrevious = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
-			rgb = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
-			previousImage.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgbPrevious, 0, Utils.EXTENDED_WIDTH);
-			image.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgb, 0, Utils.EXTENDED_WIDTH);
-		}
+			previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - 2 * Utils.OFFSET, Utils.FIELD_HEIGHT - 2 * Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
+			image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - 2 * Utils.OFFSET, Utils.FIELD_HEIGHT - 2 * Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
+		} //else {
+//			rgbPrevious = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+//			rgb = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+//			previousImage.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgbPrevious, 0, Utils.EXTENDED_WIDTH);
+//			image.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgb, 0, Utils.EXTENDED_WIDTH);
+//		}
 			
 		return !Arrays.equals(rgb, rgbPrevious);
 	}
@@ -266,7 +286,7 @@ public class Utils {
 
 	public static void skipServicePopup() throws AWTException, InterruptedException {
 		click(960, 700);
-		Thread.sleep(5000);
+		Sleep.until(THE.MAIN_MENU);
 	}
 	
 	public static void scrollOut() throws AWTException, InterruptedException {
@@ -298,6 +318,10 @@ public class Utils {
 	
 	public static void showInfo() {
         trayIcon.displayMessage("Gems of War Bot", String.format(Utils.MSG_HELP, getCurrentMode()), TrayIcon.MessageType.INFO);
+	}
+	
+	public static void displayMessage(String msg) {
+        trayIcon.displayMessage("DEBUG", msg, TrayIcon.MessageType.INFO);
 	}
 
 	public static String getCurrentMode() {
@@ -346,10 +370,9 @@ public class Utils {
 		try {
 			ImageIO.write(image, "png", new File("baseValueRead" + i + ".png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Thread.sleep(DELAY);
+		Thread.sleep(DELAY / 2);
 		return new Values(baseValue, castValue);
 	}
 
@@ -361,7 +384,6 @@ public class Utils {
 			for (int x = X_CARD_POS - Utils.SEARCH_WIDTH; x <= X_CARD_POS + Utils.SEARCH_WIDTH; x++)
 				for (int y = getCardPosY(i) - Utils.SEARCH_WIDTH; y <= getCardPosY(i) + Utils.SEARCH_WIDTH; y++)
 					cardsValue += image.getRGB(x, y);
-
 		return cardsValue;
 	}
 }

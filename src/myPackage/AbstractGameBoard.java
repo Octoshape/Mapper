@@ -1,7 +1,8 @@
 package myPackage;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import myPackage.CARD.STATUS;
 import myPackage.Utils.DIRECTION;
@@ -23,7 +24,7 @@ public class AbstractGameBoard extends AbstractBoard {
 	protected int[] counts;
 	protected static CARD[] cards;
 	protected static long cardsValue;
-	protected static boolean isBaseValueSet = false;
+	protected static Map<Long, CARD[]> valueMap = new HashMap<>();
 
 	/*** BOARD MOVE METHODS ***/
 	
@@ -192,7 +193,7 @@ public class AbstractGameBoard extends AbstractBoard {
 					board[x][y] = GEM.valueOf("GREEN");
 				else if (value < -4300000000l)
 					board[x][y] = GEM.valueOf("BROWN");
-				else if (value < -4000000000l)
+				else if (value < -3900000000l)
 					board[x][y] = GEM.valueOf("PURPLE");
 				else if (value < -3000000000l)
 					board[x][y] = GEM.valueOf("SKULL");
@@ -221,18 +222,22 @@ public class AbstractGameBoard extends AbstractBoard {
 	public void initCards() throws AWTException, InterruptedException {
 		if (Utils.hasInitialized) {
 			return;
+		} else {
+			for (int i = 0; i < 4; i++) {
+				Values vals = Utils.getBaseAndCastValueForCard(i);
+				cards[i].setBaseValue(vals.getBaseValue());
+			}
+			Utils.hasInitialized = true;
+			valueMap.put(cardsValue, copyCards());
 		}
-		for (int i = 0; i < 4; i++) {
-//			Thread.sleep(3000);
-			Values vals = Utils.getBaseAndCastValueForCard(i);
-			cards[i].setBaseValue(vals.getBaseValue());
-		}
-		Utils.hasInitialized = true;
 	}
 	
+	private CARD[] copyCards() {
+		return new CARD[] {new CARD(cards[0]), new CARD(cards[1]), new CARD(cards[2]), new CARD(cards[3]) };
+	}
+
 	public void updateCards() throws AWTException, InterruptedException {
 		for (int i = 0; i < 4; i++) {
-//			Thread.sleep(3000);
 			Values vals = Utils.getBaseAndCastValueForCard(i);
 
 			if (cards[i].getBaseValue() != vals.getBaseValue()) {
@@ -256,9 +261,7 @@ public class AbstractGameBoard extends AbstractBoard {
 				if (!alive) {
 					cards[i].set_status(STATUS.DEAD);
 				}
-			}
-
-			if (!isCardDead(cards[i])) {
+			} else {
 				// Check for cast button
 				if (vals.getCastValue() == Pixel.CAST_VALUE) {
 					cards[i].set_status(STATUS.ACTIVE);
@@ -267,16 +270,18 @@ public class AbstractGameBoard extends AbstractBoard {
 				}
 			}
 		}
+		Thread.sleep(Utils.DELAY);
 	}
 	
-	public void cleanUp() {
-		isBaseValueSet = false;
-	}
-
 	public void checkForCardUpdates() throws AWTException, InterruptedException {
-		if (cardsValue != Utils.getCardsValue()) {
-			Thread.sleep(3000);
+		long currentCardsValue = Utils.getCardsValue();
+		if (valueMap.containsKey(currentCardsValue)) {
+			cards = valueMap.get(currentCardsValue);
+			cards = copyCards();
+		} else {
 			updateCards();
+			cardsValue = currentCardsValue;
+			valueMap.put(cardsValue, copyCards());
 		}
 	}
 
