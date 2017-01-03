@@ -131,6 +131,19 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 		}
 		return tyriCast;
 	}
+	
+	@Override
+	public void checkForCardUpdates() throws AWTException, InterruptedException {
+		super.checkForCardUpdates();
+		
+		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
+			boardState = STATE.EXECUTE;
+		} else if (cards[TYRI].get_status() == STATUS.INACTIVE) {
+			boardState = STATE.CHARGE;
+		} else {
+			boardState = STATE.FINISH;
+		}
+	}
 
 	private Coordinates findBestSpiderTarget() {
 		int max = 0;
@@ -143,19 +156,6 @@ public class MapFarmGameBoard extends AbstractGameBoard {
 			}
 		}
 		return getGemOfColor(color);
-	}
-
-	@Override
-	public void updateCards() throws AWTException, InterruptedException {
-		super.updateCards();
-
-		if (cards[TYRI].get_status() == STATUS.ACTIVE) {
-			boardState = STATE.EXECUTE;
-		} else if (cards[TYRI].get_status() == STATUS.INACTIVE) {
-			boardState = STATE.CHARGE;
-		} else {
-			boardState = STATE.FINISH;
-		}
 	}
 
 	@Override

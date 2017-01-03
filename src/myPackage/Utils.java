@@ -20,13 +20,17 @@ import javax.imageio.ImageIO;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
-import myPackage.CARD.STATUS;
 import myPackage.Sleep.THE;
 
 
 public class Utils {
-	
+
 	// GENERAL CONSTANTS
+	public static final int X_OKEY_BUTTON = 960;
+	public static final int Y_OKEY_BUTTON = 900;
+	public static final int Y_CHEST_ADD = 160;
+	public static final int Y_CHEST_OPEN = 460;
+	public static final int X_CHEST_OPEN = 1500;
 	public static final int DELAY = 200;
 	public static final int CAST_DELAY = 1000;
 	public static final int X_START = 486;
@@ -119,7 +123,7 @@ public class Utils {
 			Sleep.until(THE.BOARD_IS_READY);
 		}
 	}
-	
+
 	public static void exitNoMoreMaps() throws InterruptedException, AWTException {
 		click(1280, 350);
 		Thread.sleep(500);
@@ -140,7 +144,7 @@ public class Utils {
 		click(1000, 500); // Click to skip score screen.
 		Sleep.until(THE.MAIN_MENU);
 	}
-	
+
 
 	public static void click(int x, int y) throws AWTException {
 		Robot bot = new Robot();
@@ -231,18 +235,18 @@ public class Utils {
 			for (int x = Utils.M_X_CONTINUE; x < Utils.M_X_CONTINUE + Utils.M_CONTINUE_SIZE; x++ )
 				for (int y = Utils.M_Y_CONTINUE; y < Utils.M_Y_CONTINUE + Utils.M_CONTINUE_SIZE; y++ )
 					gameOver += image.getRGB(x, y);
-			
+
 			return gameOver == Pixel.M_CONTINUE_VAL;
 		} else {
 			long gameOver = 0;
 			for (int x = Utils.MF_X_DEFEAT; x < Utils.MF_X_DEFEAT + Utils.MF_DEFEAT_WIDTH; x++ )
 				for (int y = Utils.MF_Y_DEFEAT; y < Utils.MF_Y_DEFEAT + Utils.MF_DEFEAT_HEIGHT; y++ )
 					gameOver += image.getRGB(x, y);
-			
+
 			return gameOver == Pixel.MF_DEFEAT_VAL || gameOver == Pixel.MF_VICTORY_VAL;
 		}
 	}
-	
+
 	public static boolean noMoreMaps(BufferedImage image) {
 		long noMoreMaps = 0;
 		for (int x = Utils.M_X_NO_MORE_MAPS; x < Utils.M_X_NO_MORE_MAPS + Utils.M_NO_MORE_MAPS_SIZE; x++ )
@@ -266,12 +270,12 @@ public class Utils {
 			previousImage.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - 2 * Utils.OFFSET, Utils.FIELD_HEIGHT - 2 * Utils.OFFSET, rgbPrevious, 0, Utils.FIELD_WIDTH);
 			image.getRGB(Utils.X_START + Utils.OFFSET, Utils.Y_START + Utils.OFFSET, Utils.FIELD_WIDTH - 2 * Utils.OFFSET, Utils.FIELD_HEIGHT - 2 * Utils.OFFSET, rgb, 0, Utils.FIELD_WIDTH);
 		} //else {
-//			rgbPrevious = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
-//			rgb = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
-//			previousImage.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgbPrevious, 0, Utils.EXTENDED_WIDTH);
-//			image.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgb, 0, Utils.EXTENDED_WIDTH);
-//		}
-			
+		//			rgbPrevious = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+		//			rgb = new int[Utils.EXTENDED_WIDTH * Utils.EXTENDED_HEIGHT];
+		//			previousImage.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgbPrevious, 0, Utils.EXTENDED_WIDTH);
+		//			image.getRGB(Utils.EXTENDED_X_START, Utils.EXTENDED_Y_START, Utils.EXTENDED_WIDTH, Utils.EXTENDED_HEIGHT, rgb, 0, Utils.EXTENDED_WIDTH);
+		//		}
+
 		return !Arrays.equals(rgb, rgbPrevious);
 	}
 
@@ -288,7 +292,7 @@ public class Utils {
 		click(960, 700);
 		Sleep.until(THE.MAIN_MENU);
 	}
-	
+
 	public static void scrollOut() throws AWTException, InterruptedException {
 		int j = 20;
 		Robot r = new Robot();
@@ -297,31 +301,31 @@ public class Utils {
 			Thread.sleep(10);
 		}
 	}
-	
-	
+
+
 	static TrayIcon trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("images/tray.gif"), "Popup");
-	
+
 	public static void initTrayIcon() throws AWTException {
 		SystemTray tray = SystemTray.getSystemTray();
 		tray.add(trayIcon);		
 	}
-	
+
 	public static void initGlobalKeyListener() throws NativeHookException {
 		// Clear previous logging configurations.
-        LogManager.getLogManager().reset();
-        // Get the logger for "org.jnativehook" and set the level to off.
-        Logger.getLogger(GlobalScreen.class.getPackage().getName()).setLevel(Level.OFF);
-       
-        GlobalScreen.registerNativeHook();
-        GlobalScreen.addNativeKeyListener(new GlobalKeyListener());
+		LogManager.getLogManager().reset();
+		// Get the logger for "org.jnativehook" and set the level to off.
+		Logger.getLogger(GlobalScreen.class.getPackage().getName()).setLevel(Level.OFF);
+
+		GlobalScreen.registerNativeHook();
+		GlobalScreen.addNativeKeyListener(new GlobalKeyListener());
 	}
-	
+
 	public static void showInfo() {
-        trayIcon.displayMessage("Gems of War Bot", String.format(Utils.MSG_HELP, getCurrentMode()), TrayIcon.MessageType.INFO);
+		trayIcon.displayMessage("Gems of War Bot", String.format(Utils.MSG_HELP, getCurrentMode()), TrayIcon.MessageType.INFO);
 	}
-	
+
 	public static void displayMessage(String msg) {
-        trayIcon.displayMessage("DEBUG", msg, TrayIcon.MessageType.INFO);
+		trayIcon.displayMessage("DEBUG", msg, TrayIcon.MessageType.INFO);
 	}
 
 	public static String getCurrentMode() {
@@ -329,28 +333,28 @@ public class Utils {
 			return "Bot paused";
 		}
 		switch (Utils.MODE) {
-			case "M":
-				return "Doing Maps";
-			case "MF":
-				return "Farming Maps";
-			case "P":
-				return "Doing PVP";
+		case "M":
+			return "Doing Maps";
+		case "MF":
+			return "Farming Maps";
+		case "P":
+			return "Doing PVP";
 		}
 		return "Unknown state";
 	}
 
 	public static int getCardPosY(int i) {
 		switch(i) {
-			case 0:
-				return Y_CARD1_POS;
-			case 1:
-				return Y_CARD2_POS;
-			case 2:
-				return Y_CARD3_POS;
-			case 3:
-				return Y_CARD4_POS;
-			default:
-				return -1;
+		case 0:
+			return Y_CARD1_POS;
+		case 1:
+			return Y_CARD2_POS;
+		case 2:
+			return Y_CARD3_POS;
+		case 3:
+			return Y_CARD4_POS;
+		default:
+			return -1;
 		}
 	}
 
@@ -385,5 +389,49 @@ public class Utils {
 				for (int y = getCardPosY(i) - Utils.SEARCH_WIDTH; y <= getCardPosY(i) + Utils.SEARCH_WIDTH; y++)
 					cardsValue += image.getRGB(x, y);
 		return cardsValue;
+	}
+
+	public static void openChests(int chestType) {
+		try {
+			click(960, 980);
+			Sleep.until(THE.CHEST_MENU_OPEN);
+			System.out.println("chest menü open");
+			click(290 + chestType * 250, 1000);
+			Thread.sleep(1500);
+			int button = hasKeys(chestType);
+			while(button > -1) {
+				click(X_CHEST_OPEN, Y_CHEST_OPEN + button * Y_CHEST_ADD);
+				Sleep.until(THE.CHESTS_ARE_OPEN);
+				System.out.println("chests are open");
+				click(M_X_CONTINUE, M_Y_CONTINUE);
+				Sleep.until(THE.OKEY_BUTTON_APPEARED);
+				click(X_OKEY_BUTTON, Y_OKEY_BUTTON);
+				Thread.sleep(500);
+				button = hasKeys(chestType);
+			}
+			click(1690, 60);
+			Sleep.until(THE.MAIN_MENU);
+		} catch (AWTException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static int hasKeys(int i) {
+		try {
+			BufferedImage image = takeScreenshot();
+			long chestValue = 0;
+			for (int j = 2; j >= 0; j--) {
+				for (int x = 1444; x <= 1444 + 70; x++)
+					for (int y = 441 + j * Y_CHEST_ADD; y <= 441 + j * Y_CHEST_ADD + 70; y++)
+						chestValue += image.getRGB(x, y);
+				if (chestValue != Pixel.CHESTS[i][j]) {
+					return j;
+				}
+				chestValue = 0;
+			}
+		} catch (AWTException e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 }

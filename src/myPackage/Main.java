@@ -2,9 +2,12 @@ package myPackage;
 import java.awt.image.BufferedImage;
 
 import java.awt.AWTException;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.jnativehook.NativeHookException;
 
@@ -13,12 +16,11 @@ import myPackage.Sleep.THE;
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException, NativeHookException {
-//		BufferedImage bI = ImageIO.read(new File("input\\new.png"));
-//		color(bI, 801, 676, 1079, 731);
+//		BufferedImage bI = ImageIO.read(new File("input\\goldKeys.png"));
+//		color(bI, 1656, 34, 1728, 102);
 		
 		Utils.initGlobalKeyListener();
         Utils.initTrayIcon();
-        
 		int i = 0, notMyTurnCounter = 0;
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--depth")) {
@@ -76,6 +78,7 @@ public class Main {
 					}
 				} else if (Utils.MODE.equals("MF")) {
 					if (Utils.isMyTurn(image)) {
+						Sleep.until(THE.CARDS_ARE_STEADY);
 						board = new MapFarmGameBoard(vals);
 						if (Utils.SKIP) {
 							Utils.SKIP = false;
@@ -84,7 +87,6 @@ public class Main {
 						}
 						((MapFarmGameBoard)board).initCards();
 						((MapFarmGameBoard)board).checkForCardUpdates();
-						((MapFarmGameBoard)board).debug();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
 						continue;
@@ -126,8 +128,15 @@ public class Main {
 		for (int x = xLow; x < xHigh; x++) {
 			for (int y = yLow; y < yHigh; y++) {
 				readValue += image.getRGB(x, y);
+				image.setRGB(x, y, 99999);
 			}
 		}
 		System.out.println(readValue);
+		try {
+			ImageIO.write(image, "png", new File("out.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

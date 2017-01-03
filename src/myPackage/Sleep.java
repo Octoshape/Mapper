@@ -4,7 +4,7 @@ import java.awt.AWTException;
 import java.awt.image.BufferedImage;
 
 public class Sleep {
-	public enum THE { PVP_MENU, MAIN_MENU, BOARD_IS_READY, BATTLE_IS_READY, CARDS_ARE_STEADY }
+	public enum THE { PVP_MENU, MAIN_MENU, BOARD_IS_READY, BATTLE_IS_READY, CARDS_ARE_STEADY, CHESTS_ARE_OPEN, OKEY_BUTTON_APPEARED, CHEST_MENU_OPEN }
 	
 	public static void until (THE v) {
 		switch (v) {
@@ -19,12 +19,27 @@ public class Sleep {
 			boardReady(300);
 			break;
 		case MAIN_MENU:
-			sleepWithClicks(300, 332, 923, 448, 1045, Pixel.SLEEP_MAIN_MENU);
-			screenSteady(500);
+			sleepWithClicks(300, 362, 948, 413, 995, Pixel.SLEEP_MAIN_MENU);
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+//			screenSteady(500);
 			break;
 		case PVP_MENU:
-			sleepWithClicks(300, 733, 44, 1186, 116, Pixel.SLEEP_PVP_MENU);
+			sleepWithClicks(300, 341, 35, 453, 101, Pixel.SLEEP_PVP_MENU);
 			screenSteady(500);
+			break;
+		case CHESTS_ARE_OPEN:
+			sleep(100, Utils.M_X_CONTINUE, Utils.M_Y_CONTINUE, Utils.M_X_CONTINUE + Utils.M_CONTINUE_SIZE, Utils.M_Y_CONTINUE + Utils.M_CONTINUE_SIZE, Pixel.M_CONTINUE_VAL);
+			break;
+		case OKEY_BUTTON_APPEARED:
+			sleep(100, 910, 879, 1005, 913, Pixel.OKEY_BUTTON);
+			break;
+		case CHEST_MENU_OPEN:
+			sleep(100, 1656, 34, 1728, 102, Pixel.CHEST_MENU);
 			break;
 		default:
 			break;

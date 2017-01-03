@@ -32,6 +32,10 @@ public class GlobalKeyListener implements NativeKeyListener {
 					GlobalScreen.unregisterNativeHook();
 					GlobalScreen.removeNativeKeyListener(this);
 					System.exit(0);
+				case NativeKeyEvent.VC_F7:
+					for (int i = 0; i < 3; i++) {
+						Utils.openChests(i);
+					}
 			}
 		} catch (AWTException | InterruptedException | NativeHookException ex) {
 			ex.printStackTrace();
