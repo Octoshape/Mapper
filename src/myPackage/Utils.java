@@ -395,14 +395,12 @@ public class Utils {
 		try {
 			click(960, 980);
 			Sleep.until(THE.CHEST_MENU_OPEN);
-			System.out.println("chest menü open");
 			click(290 + chestType * 250, 1000);
 			Thread.sleep(1500);
 			int button = hasKeys(chestType);
 			while(button > -1) {
 				click(X_CHEST_OPEN, Y_CHEST_OPEN + button * Y_CHEST_ADD);
 				Sleep.until(THE.CHESTS_ARE_OPEN);
-				System.out.println("chests are open");
 				click(M_X_CONTINUE, M_Y_CONTINUE);
 				Sleep.until(THE.OKEY_BUTTON_APPEARED);
 				click(X_OKEY_BUTTON, Y_OKEY_BUTTON);
