@@ -3,6 +3,7 @@ package myPackage;
 import java.util.ArrayList;
 import java.util.List;
 
+import myPackage.Utils.GEM;
 import myPackage.Utils.MAP_GEM;
 
 public abstract class AbstractBoard {
@@ -212,5 +213,39 @@ public abstract class AbstractBoard {
 		for (Coordinates c : match.coords) {
 			board[c.x][c.y] = MAP_GEM.EMPTY;
 		}
+	}
+
+	protected boolean makeMove(BoardMove m) {
+		if (m == null) {
+			return false;
+		}
+	
+		swap (m.row, m.column, m.row2, m.column2);
+		int match1 = findMatchingStones(m.row, m.column, m).size();
+		int match2 = findMatchingStones(m.row2, m.column2, m).size();
+	
+		if (match1 == 0 && match2 == 0) {
+			return false;
+		}
+	
+		assignExtraTurns(Math.max(match1, match2), m);
+		return true;
+	}
+	
+	protected boolean makeMove(BoardMove m, List<GEM> forbidden) {
+		if (m == null) {
+			return false;
+		}
+	
+		swap (m.row, m.column, m.row2, m.column2);
+		int match1 = findMatchingStones(m.row, m.column, m).size();
+		int match2 = findMatchingStones(m.row2, m.column2, m).size();
+	
+		if (match1 == 0 || forbidden.contains(board[m.row][m.column]) && match2 == 0 || forbidden.contains(board[m.row2][m.column2])) {
+			return false;
+		}
+	
+		assignExtraTurns(Math.max(match1, match2), m);
+		return true;
 	}
 }

@@ -130,6 +130,18 @@ public class TreasureBoard extends AbstractBoard {
 			}
 		}
 	}
+
+	protected boolean validMove(BoardMove m) {
+		return (this.board[m.row][m.column] != MAP_GEM.VAULT && this.board[m.row2][m.column2] != MAP_GEM.VAULT);
+	}
+	
+	@Override
+	protected boolean makeMove(BoardMove m) {
+		if (!validMove(m)) {
+			return false;
+		}
+		return super.makeMove(m);
+	}
 	
 	@Override
 	protected void removeStones(GemsMatch match) {
@@ -144,26 +156,5 @@ public class TreasureBoard extends AbstractBoard {
 
 		// add better replacement.
 		board[match.replacementCoord.x][match.replacementCoord.y] = MAP_GEM.values()[currVal.ordinal() + 1];
-	}
-
-	protected boolean validMove(BoardMove m)  {
-		return (this.board[m.row][m.column] != MAP_GEM.VAULT && this.board[m.row2][m.column2] != MAP_GEM.VAULT);
-	}
-
-	protected boolean makeMove(BoardMove m) {
-		if (m == null || !validMove(m)) {
-			return false;
-		}
-	
-		swap (m.row, m.column, m.row2, m.column2);
-		int match1 = findMatchingStones(m.row, m.column, m).size();
-		int match2 = findMatchingStones(m.row2, m.column2, m).size();
-	
-		if (match1 == 0 && match2 == 0) {
-			return false;
-		}
-	
-		assignExtraTurns(Math.max(match1, match2), m);
-		return true;
 	}
 }

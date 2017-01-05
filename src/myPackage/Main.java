@@ -114,6 +114,30 @@ public class Main {
 						}
 						continue;
 					}
+				} else if (Utils.MODE.equals("G")) {
+					if (Utils.isMyTurn(image)) {
+						notMyTurnCounter = 0;
+						Sleep.until(THE.CARDS_ARE_STEADY);
+						PVPBotGuardian bot = new PVPBotGuardian(vals);
+						if (Utils.SKIP) {
+							Utils.SKIP = false;
+							System.out.println("Skipped \"frame\", found bad RGB values.");
+							continue;
+						}
+						bot.initCards();
+						bot.checkForCardUpdates();
+						bot.updateBoardState();
+						bestMove = bot.calculateNextMove(0, null);
+					} else {
+						notMyTurnCounter++;
+						if (notMyTurnCounter > 30) {
+							notMyTurnCounter = 0;
+							Utils.skipScore();
+							Utils.startNewGame();
+							Utils.hasInitialized = false;
+						}
+						continue;
+					}
 				}
 				Utils.makeMove(bestMove);
 			} catch (Exception e) {

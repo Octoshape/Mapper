@@ -110,11 +110,10 @@ public class PVPBot extends AbstractGameBoard {
 		}
 		return bestCoordinates;
 	}
-	
+
 	@Override
-	public void updateCards() throws AWTException, InterruptedException {
-		super.updateCards();
-		if (turns > 6) {
+	public void updateBoardState() {
+		if (turns > 8) {
 			boardState = STATE.LATE;
 		}
 	}

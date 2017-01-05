@@ -22,6 +22,7 @@ public class GlobalKeyListener implements NativeKeyListener {
 				case NativeKeyEvent.VC_F3:
 				case NativeKeyEvent.VC_F4:
 				case NativeKeyEvent.VC_F6:
+				case NativeKeyEvent.VC_F7:
 					Utils.MODE = modeForKeyCode(e.getKeyCode());
 					Utils.showInfo();
 					Utils.startNewGame();
@@ -32,10 +33,11 @@ public class GlobalKeyListener implements NativeKeyListener {
 					GlobalScreen.unregisterNativeHook();
 					GlobalScreen.removeNativeKeyListener(this);
 					System.exit(0);
-				case NativeKeyEvent.VC_F7:
+				case NativeKeyEvent.VC_F12:
 					for (int i = 0; i < 3; i++) {
 						Utils.openChests(i);
 					}
+					break;
 			}
 		} catch (AWTException | InterruptedException | NativeHookException ex) {
 			ex.printStackTrace();
@@ -50,6 +52,8 @@ public class GlobalKeyListener implements NativeKeyListener {
 				return "MF";
 			case NativeKeyEvent.VC_F6:
 				return "P";
+			case NativeKeyEvent.VC_F7:
+				return "G";
 			default:
 				return "Unknown";
 		}

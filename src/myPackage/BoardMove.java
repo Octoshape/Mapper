@@ -16,6 +16,7 @@ public class BoardMove extends Move implements Comparable<BoardMove> {
 		extraTurns = -500;
 		totalExtraTurns = -500;
 		totalTurnsUsed = 1;
+		biggestMatch = 0;
 
 		switch(d) {
 		case DOWN:

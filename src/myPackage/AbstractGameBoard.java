@@ -52,35 +52,42 @@ public class AbstractGameBoard extends AbstractBoard {
 		}
 		return null;
 	}
-	
+		
 	protected BoardMove takeFoursOrFives() {
-		BoardMove nextMove = null;
+		BoardMove bestMove = new BoardMove(DIRECTION.DOWN, 0, 0), nextMove;
 		AbstractGameBoard moveBoard = new AbstractGameBoard(this);
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
 				if (column < 7) {
 					nextMove = new BoardMove(DIRECTION.RIGHT, row, column);
-					if (moveBoard.moveGeneratesExtraTurn(moveBoard, nextMove)) {
-						return nextMove;
+					if (moveBoard.makeMove(nextMove)) {
+						if (nextMove.biggestMatch > 3 && nextMove.biggestMatch >= bestMove.biggestMatch) {
+							bestMove = nextMove;
+						}
 					}
 				}
 				moveBoard = new AbstractGameBoard(this);
 
 				if (row < 7) {
 					nextMove = new BoardMove(DIRECTION.DOWN, row, column);
-					if (moveBoard.moveGeneratesExtraTurn(moveBoard, nextMove)) {
-						return nextMove;
+					if (moveBoard.makeMove(nextMove)) {
+						if (nextMove.biggestMatch > 3 && nextMove.biggestMatch >= bestMove.biggestMatch) {
+							bestMove = nextMove;
+						}
 					}
 				}
 				moveBoard = new AbstractGameBoard(this);
 			}
 		}
-		return null;
+		if (bestMove.biggestMatch > 0)
+			return bestMove;
+		else
+			return null;
 	}
 
 	protected BoardMove tryToTakeColors (GEM... colors) {
 		BoardMove move = null;
-		for (GEM color: colors) {
+		for (GEM color : colors) {
 			move = takeColor(color);
 			if (move != null) {
 				break;
@@ -240,35 +247,36 @@ public class AbstractGameBoard extends AbstractBoard {
 		for (int i = 0; i < 4; i++) {
 			Values vals = Utils.getBaseAndCastValueForCard(i);
 
-			if (cards[i].getBaseValue() != vals.getBaseValue()) {
-				// See if any other card is now here or if it's dead.
-				boolean alive = false;
-				for (int j = 0; j < 4; j++) {
-					if (j == i) continue;
-					if (cards[j].getBaseValue() == vals.getBaseValue()) {
-						// Card j is now at i's position, swap them.
-						CARD temp = cards[i];
-						int tempPos = cards[i].getPosition();
-						cards[i] = cards[j];
-						cards[i].setPosition(cards[j].getPosition());
-						cards[j] = temp;
-						cards[j].setPosition(tempPos);
-						alive = true;
-						updateConstants();
-						break;
-					}
-				}
-				if (!alive) {
-					cards[i].set_status(STATUS.DEAD);
-				}
-			} else {
+//			if (cards[i].getBaseValue() != vals.getBaseValue()) {
+//				// See if any other card is now here or if it's dead.
+//				//TODO THIS DOES NOT WORK!
+//				boolean alive = false;
+//				for (int j = 0; j < 4; j++) {
+//					if (j == i) continue;
+//					if (cards[j].getBaseValue() == vals.getBaseValue()) {
+//						// Card j is now at i's position, swap them.
+//						CARD temp = cards[i];
+//						int tempPos = cards[i].getPosition();
+//						cards[i] = cards[j];
+//						cards[i].setPosition(cards[j].getPosition());
+//						cards[j] = temp;
+//						cards[j].setPosition(tempPos);
+//						alive = true;
+//						updateConstants();
+//						break;
+//					}
+//				}
+//				if (!alive) {
+//					cards[i].set_status(STATUS.DEAD);
+//				}
+//			} else {
 				// Check for cast button
 				if (vals.getCastValue() == Pixel.CAST_VALUE) {
 					cards[i].set_status(STATUS.ACTIVE);
 				} else {
 					cards[i].set_status(STATUS.INACTIVE);
 				}
-			}
+//			}
 		}
 		Thread.sleep(Utils.DELAY);
 	}
@@ -295,5 +303,9 @@ public class AbstractGameBoard extends AbstractBoard {
 	
 	public void updateConstants () {
 		throw new RuntimeException("Don't update constants on abstract GameBoard!");		
+	}
+	
+	public void updateBoardState() {
+		
 	}
 }

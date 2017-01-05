@@ -112,7 +112,7 @@ public class Utils {
 			Sleep.until(THE.BATTLE_IS_READY);
 			click(1000, 500); // Click to start fight.
 			Sleep.until(THE.BOARD_IS_READY);
-		} else if (MODE.equals("P")) {
+		} else if (MODE.equals("P") || MODE.equals("G")) {
 			if (!Utils.hasInitialized) {
 				click(390, 980); // Click PVP.
 			}
@@ -360,7 +360,7 @@ public class Utils {
 
 	public static Values getBaseAndCastValueForCard(int i) throws AWTException, InterruptedException {
 		click(X_CARD_POS, getCardPosY(i));
-		Thread.sleep(DELAY);
+		Thread.sleep(2 * DELAY);
 		BufferedImage image = takeScreenshot();
 		long baseValue = 0, castValue = 0;
 		for (int x = X_CARD_BASE; x < X_CARD_BASE + CARD_BASE_SIZE; x++)
@@ -370,13 +370,14 @@ public class Utils {
 		for (int x = X_CAST_BUTTON; x < X_CAST_BUTTON + X_CAST_BUTTON_SIZE; x++)
 			for (int y = Y_CAST_BUTTON; y < Y_CAST_BUTTON + Y_CAST_BUTTON_SIZE; y++)
 				castValue += image.getRGB(x, y);
+		Thread.sleep(DELAY);
 		click(0, 0);
 		try {
 			ImageIO.write(image, "png", new File("baseValueRead" + i + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Thread.sleep(DELAY / 2);
+		Thread.sleep(2 * DELAY);
 		return new Values(baseValue, castValue);
 	}
 
