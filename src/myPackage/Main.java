@@ -21,7 +21,7 @@ public class Main {
 		
 		Utils.initGlobalKeyListener();
         Utils.initTrayIcon();
-		int i = 0, notMyTurnCounter = 0;
+		int notMyTurnCounter = 0;
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--depth")) {
 			Utils.DEPTH = Integer.parseInt(argsList.get(argsList.indexOf("--depth") + 1));
@@ -52,7 +52,6 @@ public class Main {
 							Utils.MODE = "M";
 						}
 						Utils.startNewGame();
-						Utils.hasInitialized = false;
 					} else if (Utils.isServicePopupShowing(image)) {
 						Utils.skipServicePopup();
 						Utils.startNewGame();
@@ -85,7 +84,7 @@ public class Main {
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
-						((MapFarmGameBoard)board).initCards();
+						((MapFarmGameBoard)board).initBoard();
 						((MapFarmGameBoard)board).checkForCardUpdates();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
@@ -101,7 +100,7 @@ public class Main {
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
-						((PVPBot)board).initCards();
+						((PVPBot)board).initBoard();
 						((PVPBot)board).checkForCardUpdates();
 						bestMove = board.calculateNextMove(0, null);
 					} else {
@@ -124,7 +123,7 @@ public class Main {
 							System.out.println("Skipped \"frame\", found bad RGB values.");
 							continue;
 						}
-						bot.initCards();
+						bot.initBoard();
 						bot.checkForCardUpdates();
 						bot.updateBoardState();
 						bestMove = bot.calculateNextMove(0, null);
@@ -146,6 +145,7 @@ public class Main {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static void color(BufferedImage image, int xLow, int yLow, int xHigh, int yHigh) throws InterruptedException, AWTException {
 		Thread.sleep(500);
 		long readValue = 0;

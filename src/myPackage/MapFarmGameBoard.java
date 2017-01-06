@@ -1,8 +1,6 @@
 package myPackage;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 
 import myPackage.CARD.STATUS;
 import myPackage.Utils.GEM;

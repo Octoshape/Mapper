@@ -37,8 +37,10 @@ public class PVPBotGuardian extends AbstractGameBoard {
 	 */
 	public PVPBotGuardian(long[][] vals) throws AWTException {
 		super(vals);
-		if (!Utils.hasInitialized) {
+		if (cards == null) {
 			cards = new CARD[] {new CARD("MERCY", MERCY), new CARD("ALCHI", ALCH), new CARD("CAT", CAT), new CARD("GARD", GARD)};
+		}
+		if (boardState == null) {
 			boardState = STATE.NONE;
 		}
 	}
@@ -63,7 +65,7 @@ public class PVPBotGuardian extends AbstractGameBoard {
 		case NONE:
 			finalMove = takeFoursOrFives();
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.BROWN, GEM.PURPLE, GEM.RED, GEM.YELLOW, GEM.GREEN, GEM.BLUE, GEM.SKULL);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.BROWN, GEM.PURPLE, GEM.RED, GEM.YELLOW, GEM.GREEN, GEM.BLUE);
 			break;
 		case G:
 			finalMove = takeFoursOrFives();
@@ -75,21 +77,21 @@ public class PVPBotGuardian extends AbstractGameBoard {
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(ALCH);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.PURPLE, GEM.YELLOW, GEM.GREEN, GEM.BLUE, GEM.SKULL, GEM.BROWN, GEM.RED);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.PURPLE, GEM.YELLOW, GEM.GREEN, GEM.BLUE, GEM.BROWN, GEM.RED);
 			break;
 		case C:
 			finalMove = takeFoursOrFivesUnless(GEM.RED);
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(CAT);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.BROWN, GEM.RED, GEM.GREEN, GEM.BLUE, GEM.SKULL, GEM.YELLOW, GEM.PURPLE);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.BROWN, GEM.RED, GEM.GREEN, GEM.BLUE, GEM.YELLOW, GEM.PURPLE);
 			break;
 		case M:
 			finalMove = takeFoursOrFivesUnless(GEM.YELLOW, GEM.PURPLE);
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(MERCY);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.BROWN, GEM.PURPLE, GEM.RED, GEM.YELLOW, GEM.SKULL, GEM.GREEN, GEM.BLUE);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.BROWN, GEM.PURPLE, GEM.RED, GEM.YELLOW, GEM.GREEN, GEM.BLUE);
 			break;
 		case AC:
 			finalMove = takeFoursOrFivesUnless(GEM.YELLOW, GEM.RED);
@@ -98,7 +100,7 @@ public class PVPBotGuardian extends AbstractGameBoard {
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(ALCH);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.GREEN, GEM.BLUE, GEM.SKULL, GEM.BROWN, GEM.YELLOW, GEM.RED, GEM.PURPLE);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.GREEN, GEM.BLUE, GEM.BROWN, GEM.YELLOW, GEM.RED, GEM.PURPLE);
 			break;
 		case MA:
 			finalMove = takeFoursOrFivesUnless(GEM.YELLOW, GEM.PURPLE);
@@ -107,7 +109,7 @@ public class PVPBotGuardian extends AbstractGameBoard {
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(ALCH);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.YELLOW, GEM.PURPLE, GEM.SKULL, GEM.BROWN, GEM.RED, GEM.GREEN, GEM.BLUE);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.YELLOW, GEM.PURPLE, GEM.BROWN, GEM.RED, GEM.GREEN, GEM.BLUE);
 			break;
 		case MC:
 			finalMove = takeFoursOrFivesUnless(GEM.YELLOW, GEM.PURPLE, GEM.RED);
@@ -116,7 +118,7 @@ public class PVPBotGuardian extends AbstractGameBoard {
 			if (finalMove != null) break;
 			finalMove = castIfExtraTurn(CAT);
 			if (finalMove != null) break;
-			finalMove = tryToTakeColors(GEM.BROWN, GEM.RED, GEM.SKULL, GEM.YELLOW, GEM.BLUE, GEM.PURPLE, GEM.GREEN);
+			finalMove = tryToTakeColors(GEM.SKULL, GEM.BROWN, GEM.RED, GEM.YELLOW, GEM.BLUE, GEM.PURPLE, GEM.GREEN);
 			break;
 		case MAC:
 			finalMove = takeFoursOrFivesUnless(GEM.YELLOW, GEM.PURPLE, GEM.RED);

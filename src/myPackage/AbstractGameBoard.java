@@ -12,9 +12,6 @@ public class AbstractGameBoard extends AbstractBoard {
 
 	public AbstractGameBoard(long[][] vals) throws AWTException {
 		super(vals);
-		if (!Utils.hasInitialized) {
-			cardsValue = Utils.getCardsValue();
-		}
 	}
 
 	public AbstractGameBoard(AbstractGameBoard otherBoard) {
@@ -23,7 +20,6 @@ public class AbstractGameBoard extends AbstractBoard {
 
 	protected int[] counts;
 	protected static CARD[] cards;
-	protected static long cardsValue;
 	protected static Map<Long, CARD[]> valueMap = new HashMap<>();
 
 	/*** BOARD MOVE METHODS ***/
@@ -226,16 +222,13 @@ public class AbstractGameBoard extends AbstractBoard {
 		return c.get_status() == STATUS.DEAD;
 	}
 
-	public void initCards() throws AWTException, InterruptedException {
+	public void initBoard() throws AWTException, InterruptedException {
 		if (Utils.hasInitialized) {
 			return;
 		} else {
-			for (int i = 0; i < 4; i++) {
-				Values vals = Utils.getBaseAndCastValueForCard(i);
-				cards[i].setBaseValue(vals.getBaseValue());
-			}
+			updateCards(true);
+			valueMap.put(Utils.getCardsValue(), copyCards());
 			Utils.hasInitialized = true;
-			valueMap.put(cardsValue, copyCards());
 		}
 	}
 	
@@ -243,11 +236,15 @@ public class AbstractGameBoard extends AbstractBoard {
 		return new CARD[] {new CARD(cards[0]), new CARD(cards[1]), new CARD(cards[2]), new CARD(cards[3]) };
 	}
 
-	public void updateCards() throws AWTException, InterruptedException {
+	public void updateCards(boolean init) throws AWTException, InterruptedException {
 		for (int i = 0; i < 4; i++) {
 			Values vals = Utils.getBaseAndCastValueForCard(i);
+			if (init) {
+				cards[i].setBaseValue(vals.getBaseValue());
+				continue;
+			}
 
-//			if (cards[i].getBaseValue() != vals.getBaseValue()) {
+			if (cards[i].getBaseValue() != vals.getBaseValue()) {
 //				// See if any other card is now here or if it's dead.
 //				//TODO THIS DOES NOT WORK!
 //				boolean alive = false;
@@ -267,18 +264,17 @@ public class AbstractGameBoard extends AbstractBoard {
 //					}
 //				}
 //				if (!alive) {
-//					cards[i].set_status(STATUS.DEAD);
+					cards[i].set_status(STATUS.DEAD);
 //				}
-//			} else {
+			} else {
 				// Check for cast button
 				if (vals.getCastValue() == Pixel.CAST_VALUE) {
 					cards[i].set_status(STATUS.ACTIVE);
 				} else {
 					cards[i].set_status(STATUS.INACTIVE);
 				}
-//			}
+			}
 		}
-		Thread.sleep(Utils.DELAY);
 	}
 	
 	public void checkForCardUpdates() throws AWTException, InterruptedException {
@@ -287,9 +283,8 @@ public class AbstractGameBoard extends AbstractBoard {
 			cards = valueMap.get(currentCardsValue);
 			cards = copyCards();
 		} else {
-			updateCards();
-			cardsValue = currentCardsValue;
-			valueMap.put(cardsValue, copyCards());
+			updateCards(false);
+			valueMap.put(currentCardsValue, copyCards());
 		}
 	}
 

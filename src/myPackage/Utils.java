@@ -132,7 +132,7 @@ public class Utils {
 	}
 
 	public static void skipScore() throws AWTException, InterruptedException {
-		if (MODE.equals("P")) {
+		if (MODE.equals("P") || MODE.equals("G")) {
 			Sleep.until(THE.PVP_MENU);
 			return;
 		}
