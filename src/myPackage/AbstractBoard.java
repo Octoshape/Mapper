@@ -19,6 +19,13 @@ public abstract class AbstractBoard {
 			for (int j = 0; j < 8; j++) 
 				board[i][j] = otherBoard.board[i][j];
 	}
+	
+	protected AbstractBoard(GEM[][] gems) {
+		board = new IGem[8][8];
+		for (int row = 0; row < 8; row++)
+			for (int col = 0; col < 8; col++) 
+				board[row][col] = gems[row][col];
+	}
 
 
 	protected abstract void initBoard(long[][] values);

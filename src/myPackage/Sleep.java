@@ -2,6 +2,8 @@ package myPackage;
 
 import java.awt.AWTException;
 import java.awt.image.BufferedImage;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class Sleep {
 	public enum THE { PVP_MENU, MAIN_MENU, BOARD_IS_READY, BATTLE_IS_READY, CARDS_ARE_STEADY, CHESTS_ARE_OPEN, OKEY_BUTTON_APPEARED, CHEST_MENU_OPEN }
@@ -15,7 +17,7 @@ public class Sleep {
 			sleep(300, 801, 676, 1079, 731, Pixel.SLEEP_BATTLE_READY);
 			break;
 		case BOARD_IS_READY:
-			sleep(200, 1716, 6, 1766, 56, Pixel.SLEEP_BOARD_OPEN);
+			sleep2(200, 1716, 6, 1766, 56, Pixel.SLEEP_BOARD_OPEN);
 			boardReady(300);
 			break;
 		case MAIN_MENU:
@@ -29,7 +31,7 @@ public class Sleep {
 //			screenSteady(500);
 			break;
 		case PVP_MENU:
-			sleepWithClicks(300, 341, 35, 453, 101, Pixel.SLEEP_PVP_MENU);
+			sleepWithClicks2(300, 341, 35, 453, 101, Pixel.SLEEP_PVP_MENU);
 			screenSteady(500);
 			break;
 		case CHESTS_ARE_OPEN:
@@ -47,14 +49,63 @@ public class Sleep {
 		}
 	}
 	
+	private static void sleep2(int delay, int xLow, int yLow, int xHigh, int yHigh, long value) {
+		try {
+			boolean confirmed = false;
+			int clickCounter = 0;
+			while (!confirmed) {
+				do {
+					if (clickCounter++ > 10) {
+						clickCounter = 0;
+						Utils.click(950, 700);
+					}
+					
+				} while (getValue(delay, xLow, yLow, xHigh, yHigh) != value);
+				// Check twice.
+				if (getValue(delay, xLow, yLow, xHigh, yHigh) == value) {
+					confirmed = true;
+				}
+			}
+		} catch (InterruptedException | AWTException e) { 
+			e.printStackTrace();
+		}
+	}
+
+	private static void sleepWithClicks2(int delay, int xLow, int yLow, int xHigh, int yHigh, long value) {
+		try {
+			boolean confirmed = false;
+			int clickCounter = 0;
+			while (!confirmed) {
+				do {
+					if (clickCounter++ > 10) {
+						clickCounter = 0;
+						Utils.click(700, 500);
+						Utils.click(0, 0);
+						if (getValue(100, 362, 948, 413, 995) == Pixel.SLEEP_MAIN_MENU) {
+							Utils.click(390, 980);
+						}
+					}
+					
+				} while (getValue(delay, xLow, yLow, xHigh, yHigh) != value);
+				// Check twice.
+				if (getValue(delay, xLow, yLow, xHigh, yHigh) == value) {
+					confirmed = true;
+				}
+			}
+		} catch (InterruptedException | AWTException e) { 
+			e.printStackTrace();
+		}
+	}
+
 	private static void cardsSteady(int delay) {
 		try {
 			long previous, current;
+			LocalDateTime now = LocalDateTime.now();
 			do {
 				previous = Utils.getCardsValue();
 				Thread.sleep(delay);
 				current = Utils.getCardsValue();
-			} while (previous != current);
+			} while (previous != current && Duration.between(now, LocalDateTime.now()).toMillis() < 5000);
 		} catch (AWTException | InterruptedException e) {
 			e.printStackTrace();
 		}

@@ -1,6 +1,9 @@
 package myPackage;
 
-public class CARD {
+import java.io.Serializable;
+
+public class CARD implements Serializable {
+
 	public enum STATUS {ACTIVE, INACTIVE, DEAD};
 	private STATUS status;
 	private Integer position;

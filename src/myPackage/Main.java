@@ -5,13 +5,17 @@ import java.awt.AWTException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import org.jnativehook.NativeHookException;
 
+import myPackage.CARD.STATUS;
 import myPackage.Sleep.THE;
+import myPackage.Utils.GEM;
 
 public class Main {
 
@@ -19,8 +23,15 @@ public class Main {
 //		BufferedImage bI = ImageIO.read(new File("input\\goldKeys.png"));
 //		color(bI, 1656, 34, 1728, 102);
 		
+//		PVPBotGuardian specialBoard = new PVPBotGuardian("BprBsspr\nsrsygBbp\nBrgrpByy\npbysBssB\nBsgrypsp\nBbpBBbgy\nrryybBbb\nprypBbsy");
+//		specialBoard.cards = new CARD[] {new CARD("MERCY", 0), new CARD("ALCHI", 1), new CARD("CAT", 2), new CARD("GARD", 3)};
+//		specialBoard.cards[2].set_status(STATUS.ACTIVE);
+//		specialBoard.updateBoardState();
+//		Move next = specialBoard.calculateNextMove(0, null);
+
 		Utils.initGlobalKeyListener();
         Utils.initTrayIcon();
+        
 		int notMyTurnCounter = 0;
 		List<String> argsList= Arrays.asList(args);
 		if (argsList.contains("--depth")) {
@@ -109,7 +120,6 @@ public class Main {
 							notMyTurnCounter = 0;
 							Utils.skipScore();
 							Utils.startNewGame();
-							Utils.hasInitialized = false;
 						}
 						continue;
 					}
@@ -133,7 +143,6 @@ public class Main {
 							notMyTurnCounter = 0;
 							Utils.skipScore();
 							Utils.startNewGame();
-							Utils.hasInitialized = false;
 						}
 						continue;
 					}

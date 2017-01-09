@@ -25,15 +25,16 @@ public class GlobalKeyListener implements NativeKeyListener {
 				case NativeKeyEvent.VC_F7:
 					Utils.MODE = modeForKeyCode(e.getKeyCode());
 					Utils.showInfo();
+					Utils.loadValueMap();
 					Utils.startNewGame();
-					Utils.hasInitialized = false;
 					Utils.PAUSED = false;
 					break;
 				case NativeKeyEvent.VC_F5:
 					GlobalScreen.unregisterNativeHook();
 					GlobalScreen.removeNativeKeyListener(this);
+					Utils.saveValueMap();
 					System.exit(0);
-				case NativeKeyEvent.VC_F12:
+				case NativeKeyEvent.VC_F11:
 					for (int i = 0; i < 3; i++) {
 						Utils.openChests(i);
 					}

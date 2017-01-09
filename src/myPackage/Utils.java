@@ -9,8 +9,13 @@ import java.awt.TrayIcon;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -372,19 +377,14 @@ public class Utils {
 				castValue += image.getRGB(x, y);
 		Thread.sleep(DELAY);
 		click(0, 0);
-		try {
-			ImageIO.write(image, "png", new File("baseValueRead" + i + ".png"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		Thread.sleep(2 * DELAY);
 		return new Values(baseValue, castValue);
 	}
-
+	
 	public static long getCardsValue() throws AWTException {
 		BufferedImage image = takeScreenshot();
 		long cardsValue = 0;
-
+		
 		for (int i = 0; i < 4; i++)
 			for (int x = X_CARD_POS - Utils.SEARCH_WIDTH; x <= X_CARD_POS + Utils.SEARCH_WIDTH; x++)
 				for (int y = getCardPosY(i) - Utils.SEARCH_WIDTH; y <= getCardPosY(i) + Utils.SEARCH_WIDTH; y++)
@@ -404,6 +404,7 @@ public class Utils {
 				Sleep.until(THE.CHESTS_ARE_OPEN);
 				click(M_X_CONTINUE, M_Y_CONTINUE);
 				Sleep.until(THE.OKEY_BUTTON_APPEARED);
+				Thread.sleep(3000); // UFS SIMIHIRN WARTA.
 				click(X_OKEY_BUTTON, Y_OKEY_BUTTON);
 				Thread.sleep(500);
 				button = hasKeys(chestType);
@@ -432,5 +433,88 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public static GEM[][] gemsFromString(String gemsString) {
+		int row = 0, col = 0;
+		GEM[][] result = new GEM[8][8];
+		for (int i = 0; i < gemsString.length(); i++){
+		    char c = gemsString.charAt(i);
+		    GEM currentGem = null;
+		    switch (c) {
+		    case 'b':
+		    	currentGem = GEM.BLUE;
+		    	break;
+		    case 'B':
+		    	currentGem = GEM.BROWN;
+		    	break;
+		    case 's':
+		    	currentGem = GEM.SKULL;
+		    	break;
+		    case 'r':
+		    	currentGem = GEM.RED;
+		    	break;
+		    case 'p':
+		    	currentGem = GEM.PURPLE;
+		    	break;
+		    case 'g':
+		    	currentGem = GEM.GREEN;
+		    	break;
+		    case 'y':
+		    	currentGem = GEM.YELLOW;
+		    	break;
+		    case '\n':
+		    	col = 0;
+		    	row++;
+		    	continue;
+		    }
+		    result[row][col++] = currentGem;
+		}
+		return result;
+	}
+	
+	public static void loadValueMap() {
+		String filename = "";
+		switch (MODE) {
+		case "G":
+			filename = "gardValueMap";
+			break;
+		default:
+			return;
+		}
+		
+		try {
+	         FileInputStream fileIn = new FileInputStream("input\\valueMap\\" + filename);
+	         ObjectInputStream in = new ObjectInputStream(fileIn);
+	         AbstractGameBoard.valueMap = (HashMap<Long, CARD[]>) in.readObject();
+	         Utils.hasInitialized = true;
+	         in.close();
+	         fileIn.close();
+	      } catch(IOException | ClassNotFoundException e) {
+	         e.printStackTrace();
+	         System.out.println("Could not find stored valueMap, starting from scratch.");
+	         Utils.hasInitialized = false;
+	      }
+	}
+
+	public static void saveValueMap() {
+		String filename = "";
+		switch (MODE) {
+		case "G":
+			filename = "gardValueMap";
+			break;
+		default:
+			return;
+		}
+		
+		try {
+			FileOutputStream fileOut = new FileOutputStream("input\\valueMap\\" + filename);
+	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	         out.writeObject(AbstractGameBoard.valueMap);
+	         out.close();
+	         fileOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

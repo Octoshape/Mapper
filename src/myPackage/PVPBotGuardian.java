@@ -27,7 +27,15 @@ public class PVPBotGuardian extends AbstractGameBoard {
 	public PVPBotGuardian(AbstractGameBoard otherBoard) {
 		super(otherBoard);
 	}
-
+	
+	public PVPBotGuardian(GEM[][] gems) {
+		super(gems);
+	}
+	
+	public PVPBotGuardian(String gemsString) {
+		super(Utils.gemsFromString(gemsString));
+	}
+	
 	/**
 	 * Use this constructor to initialize your Board. 
 	 * 

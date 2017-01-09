@@ -17,10 +17,14 @@ public class AbstractGameBoard extends AbstractBoard {
 	public AbstractGameBoard(AbstractGameBoard otherBoard) {
 		super(otherBoard);
 	}
+	
+	public AbstractGameBoard(GEM[][] gems) {
+		super(gems);
+	}
 
 	protected int[] counts;
 	protected static CARD[] cards;
-	protected static Map<Long, CARD[]> valueMap = new HashMap<>();
+	public static Map<Long, CARD[]> valueMap = new HashMap<>();
 
 	/*** BOARD MOVE METHODS ***/
 	
