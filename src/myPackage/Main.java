@@ -20,10 +20,17 @@ import myPackage.Utils.GEM;
 public class Main {
 
 	public static void main(String[] args) throws IOException, AWTException, InterruptedException, NativeHookException {
-//		BufferedImage bI = ImageIO.read(new File("input\\goldKeys.png"));
-//		color(bI, 1656, 34, 1728, 102);
-		
-//		PVPBotGuardian specialBoard = new PVPBotGuardian("BprBsspr\nsrsygBbp\nBrgrpByy\npbysBssB\nBsgrypsp\nBbpBBbgy\nrryybBbb\nprypBbsy");
+//		BufferedImage bI = ImageIO.read(new File("input\\up1.png"));
+//		color(bI, 213, 970, 287, 1042);
+//		
+//		PVPBotGuardian specialBoard = new PVPBotGuardian("BprBsspr\n"
+//													   + "srsygpbp\n"
+//													   + "BrgrpBpy\n"
+//													   + "pbysBspB\n"
+//													   + "Bsgrypsp\n"
+//													   + "BbpBBbgy\n"
+//													   + "rryysBbb\n"
+//													   + "prypBbsy");
 //		specialBoard.cards = new CARD[] {new CARD("MERCY", 0), new CARD("ALCHI", 1), new CARD("CAT", 2), new CARD("GARD", 3)};
 //		specialBoard.cards[2].set_status(STATUS.ACTIVE);
 //		specialBoard.updateBoardState();
@@ -123,7 +130,7 @@ public class Main {
 						}
 						continue;
 					}
-				} else if (Utils.MODE.equals("G")) {
+				} else if (Utils.MODE.equals("G") || Utils.MODE.equals("Q") || Utils.MODE.equals("T")) {
 					if (Utils.isMyTurn(image)) {
 						notMyTurnCounter = 0;
 						Sleep.until(THE.CARDS_ARE_STEADY);

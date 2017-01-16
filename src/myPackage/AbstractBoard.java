@@ -223,20 +223,7 @@ public abstract class AbstractBoard {
 	}
 
 	protected boolean makeMove(BoardMove m) {
-		if (m == null) {
-			return false;
-		}
-	
-		swap (m.row, m.column, m.row2, m.column2);
-		int match1 = findMatchingStones(m.row, m.column, m).size();
-		int match2 = findMatchingStones(m.row2, m.column2, m).size();
-	
-		if (match1 == 0 && match2 == 0) {
-			return false;
-		}
-	
-		assignExtraTurns(Math.max(match1, match2), m);
-		return true;
+		return makeMove(m, new ArrayList<GEM>());
 	}
 	
 	protected boolean makeMove(BoardMove m, List<GEM> forbidden) {
@@ -248,7 +235,15 @@ public abstract class AbstractBoard {
 		int match1 = findMatchingStones(m.row, m.column, m).size();
 		int match2 = findMatchingStones(m.row2, m.column2, m).size();
 	
-		if (match1 == 0 || forbidden.contains(board[m.row][m.column]) && match2 == 0 || forbidden.contains(board[m.row2][m.column2])) {
+		if (match1 == 0 && match2 == 0) {
+			return false;
+		}
+		
+		if (match1 > 0 && forbidden.contains(board[m.row][m.column])) {
+			return false;
+		}
+		
+		if (match2 > 0 && forbidden.contains(board[m.row2][m.column2])) {
 			return false;
 		}
 	

@@ -23,6 +23,8 @@ public class GlobalKeyListener implements NativeKeyListener {
 				case NativeKeyEvent.VC_F4:
 				case NativeKeyEvent.VC_F6:
 				case NativeKeyEvent.VC_F7:
+				case NativeKeyEvent.VC_F8:
+				case NativeKeyEvent.VC_F9:
 					Utils.MODE = modeForKeyCode(e.getKeyCode());
 					Utils.showInfo();
 					Utils.loadValueMap();
@@ -34,6 +36,11 @@ public class GlobalKeyListener implements NativeKeyListener {
 					GlobalScreen.removeNativeKeyListener(this);
 					Utils.saveValueMap();
 					System.exit(0);
+				case NativeKeyEvent.VC_F10:
+					int amount = 2;
+					while (amount-- > 0)
+						Utils.ascendTroop();
+					break;
 				case NativeKeyEvent.VC_F11:
 					for (int i = 0; i < 3; i++) {
 						Utils.openChests(i);
@@ -55,6 +62,10 @@ public class GlobalKeyListener implements NativeKeyListener {
 				return "P";
 			case NativeKeyEvent.VC_F7:
 				return "G";
+			case NativeKeyEvent.VC_F8:
+				return "Q";
+			case NativeKeyEvent.VC_F9:
+				return "T";
 			default:
 				return "Unknown";
 		}

@@ -118,12 +118,18 @@ public class Utils {
 			click(1000, 500); // Click to start fight.
 			Sleep.until(THE.BOARD_IS_READY);
 		} else if (MODE.equals("P") || MODE.equals("G")) {
-			if (!Utils.hasInitialized) {
-				click(390, 980); // Click PVP.
-			}
+
 			Sleep.until(THE.PVP_MENU);
 			click(1450, 250); // Click hard enemy.
 			Sleep.until(THE.BATTLE_IS_READY);
+			click(1000, 500); // Click to start fight.
+			Sleep.until(THE.BOARD_IS_READY);
+		} else if (MODE.equals("Q")) {
+			Sleep.until(THE.QUEST_FIGHT_READY);
+			click(1000, 500); // Click to start fight.
+			Sleep.until(THE.BOARD_IS_READY);
+		} else if (MODE.equals("T")) {
+			Sleep.until(THE.TRAITSTONE_FIGHT_READY);
 			click(1000, 500); // Click to start fight.
 			Sleep.until(THE.BOARD_IS_READY);
 		}
@@ -137,6 +143,10 @@ public class Utils {
 	}
 
 	public static void skipScore() throws AWTException, InterruptedException {
+		if (MODE.equals("Q")) {
+			return;
+		}
+		
 		if (MODE.equals("P") || MODE.equals("G")) {
 			Sleep.until(THE.PVP_MENU);
 			return;
@@ -404,7 +414,7 @@ public class Utils {
 				Sleep.until(THE.CHESTS_ARE_OPEN);
 				click(M_X_CONTINUE, M_Y_CONTINUE);
 				Sleep.until(THE.OKEY_BUTTON_APPEARED);
-				Thread.sleep(3000); // UFS SIMIHIRN WARTA.
+				Thread.sleep(500); // UFS SIMIHIRN WARTA.
 				click(X_OKEY_BUTTON, Y_OKEY_BUTTON);
 				Thread.sleep(500);
 				button = hasKeys(chestType);
@@ -477,12 +487,13 @@ public class Utils {
 		String filename = "";
 		switch (MODE) {
 		case "G":
+		case "Q":
+		case "T":
 			filename = "gardValueMap";
 			break;
 		default:
 			return;
 		}
-		
 		try {
 	         FileInputStream fileIn = new FileInputStream("input\\valueMap\\" + filename);
 	         ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -516,5 +527,30 @@ public class Utils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void ascendTroop() throws AWTException, InterruptedException {
+		Sleep.until(THE.TROOPS_MENU_OPEN);
+		click(370, 1000); // Click Sort
+		Thread.sleep(200);
+		click(380, 490); // Click upgradable
+		Thread.sleep(200);
+		click(700, 300); // Click first card
+		Thread.sleep(500);
+		click(956, 926); // Click crafting
+		Sleep.until(THE.CHEST_MENU_OPEN);
+		click(620, 1000); // Click ascension
+		Thread.sleep(200);
+		for (int i = 0; i < 30; i++) {
+			click(1203, 828); // Click arrow
+			Thread.sleep(10);
+		}
+		click(1520, 830); // Click sacrifice
+		BufferedImage current = takeScreenshot(), previous;
+		do {
+			previous = current;
+			Thread.sleep(500);
+			current = takeScreenshot();
+		} while (hasBoardMoved(previous, current));
 	}
 }
