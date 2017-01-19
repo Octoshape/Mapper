@@ -118,12 +118,14 @@ public class Utils {
 			click(1000, 500); // Click to start fight.
 			Sleep.until(THE.BOARD_IS_READY);
 		} else if (MODE.equals("P") || MODE.equals("G")) {
-
 			Sleep.until(THE.PVP_MENU);
 			click(1450, 250); // Click hard enemy.
 			Sleep.until(THE.BATTLE_IS_READY);
 			click(1000, 500); // Click to start fight.
-			Sleep.until(THE.BOARD_IS_READY);
+			Sleep.until(THE.BOARD_IS_OPEN);
+			Thread.sleep(3000);
+			makeMove(new CARD("instantCast", 0).castWithoutTarget());
+			Sleep.until(THE.CARDS_ARE_STEADY);
 		} else if (MODE.equals("Q")) {
 			Sleep.until(THE.QUEST_FIGHT_READY);
 			click(1000, 500); // Click to start fight.
